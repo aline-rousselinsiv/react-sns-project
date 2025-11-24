@@ -24,6 +24,8 @@ function Login() {
           .then( data => {
               if(data.result == "success"){
                   alert(data.msg);
+                  console.log(data);
+                  localStorage.setItem("token", data.token); // storing our token in a local storage
                   navigate("/feed");
               } else {
                 alert(data.msg);

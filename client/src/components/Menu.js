@@ -2,6 +2,7 @@ import React from 'react';
 import { Drawer, List, ListItem, ListItemText, Typography, Toolbar, ListItemIcon } from '@mui/material';
 import { Home, Add, AccountCircle } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import Mui from './Mui';
 
 function Menu() {
   return (
@@ -38,6 +39,12 @@ function Menu() {
             <AccountCircle />
           </ListItemIcon>
           <ListItemText primary="마이페이지" />
+        </ListItem>
+        <ListItem button component={Link} to="/mui">
+          <ListItemIcon>
+            <Home />
+          </ListItemIcon>
+          <ListItemText primary="mui 테스트" />
         </ListItem>
       </List>
     </Drawer>

@@ -24,6 +24,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect } from 'react';
+import {jwtDecode} from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
 // const mockFeeds = [
 
@@ -74,17 +76,50 @@ function Feed() {
 
   
   let [feeds, setFeeds] = useState([]);
+  let navigate = useNavigate();
 
   function handleGetFeed(){
-    let userId = 'test1';
+    // let userId = 'test1';
+    const token = localStorage.getItem("token");
 
-    fetch("http://localhost:3010/feed/"+userId)
+    if(token){
+      const decoded = jwtDecode(token);
+      console.log("user ID ==> ", decoded.userId);
+      fetch("http://localhost:3010/feed/"+decoded.userId)
             .then( res => res.json() )
             .then(data => {
                 console.log(data);
                 setFeeds(data.list);
             })
+     } else {
+      // 로그인 페이지 이동
+      alert("로그인 먼저 하세요.");
+      navigate("/");
+     }
 }
+
+  // function handleDelete(feedId){
+  //   const token = localStorage.getItem("token");
+
+  //   if(token){
+  //     const decoded = jwtDecode(token);
+  //     console.log("decoded token ==> ", decoded);
+  //     fetch("http://localhost:3010/feed/"+feedId, {
+  //       method : "DELETE"
+  //     })
+  //           .then( res => res.json() )
+  //           .then(data => {
+  //               if(data.result == "success"){
+  //                 alert("삭제되었습니다 !");
+  //               }
+  //           })
+  //    } else {
+  //     // 로그인 페이지 이동
+  //     alert("로그인 먼저 하세요.");
+  //     navigate("/");
+  //    }
+
+  // }
     
 useEffect(()=>{
     // console.log("서버에서 요청해서 제품 목록을 가져오는 부분");
@@ -101,7 +136,7 @@ useEffect(()=>{
 
       <Box mt={4}>
         <Grid2 container spacing={3}>
-          {feeds.map((feed) => (
+          {feeds.length > 0 ? feeds.map((feed) => (
             <Grid2 xs={12} sm={6} md={4} key={feed.id}>
               <Card>
                 <CardMedia
@@ -119,7 +154,8 @@ useEffect(()=>{
                 </CardContent>
               </Card>
             </Grid2>
-          ))}
+            
+          )) : "등록된 피드가 없습니다. 피드를 등록해보세요."}
         </Grid2>
       </Box>
 
@@ -178,6 +214,26 @@ useEffect(()=>{
           </Box>
         </DialogContent>
         <DialogActions>
+          <Button onClick={()=>{
+            console.log(selectedFeed);
+            // 삭제 요청하면서 selectedFeed.id를 보낸다
+            fetch("http://localhost:3010/feed/"+selectedFeed.id, {
+              method : "DELETE",
+              headers : {
+                  "Authorization" : "Bearer " + localStorage.getItem("token")
+              }
+            })
+            .then( res => res.json() )
+            .then(data => {
+                if(data.result == "success"){
+                  alert("삭제되었습니다 !");
+                  setOpen(false);
+                  handleGetFeed();
+                }
+            })
+          }} variant="contained" color="primary">
+            삭제
+          </Button>
           <Button onClick={handleClose} color="primary">
             닫기
           </Button>

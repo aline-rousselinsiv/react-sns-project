@@ -2,8 +2,8 @@ const express = require('express'); // framework like Spring Boot
 const router = express.Router();
 const db = require("../db");
 const bcrypt = require('bcrypt');
-// const jwt = require('jsonwebtoken');
-// const JWT_KEY = "server_secret_key"; // 해시 함수 실행 위해 사용할 키로 아주 긴 랜덤한 문자를 사용하길 권장하며, 노출되면 안됨.
+const jwt = require('jsonwebtoken');
+const JWT_KEY = "server_secret_key"; // 해시 함수 실행 위해 사용할 키로 아주 긴 랜덤한 문자를 사용하길 권장하며, 노출되면 안됨.
 
 router.post("/join", async (req, res) =>{
     let {userId, pwd, userName} = req.body;
@@ -38,15 +38,15 @@ router.post('/login', async (req, res) => {
             if(match){
                 msg= list[0].userId + "님 환영합니다!";
                 result = "success";
-                // let user = {
-                //     userId : list[0].userId,
-                //     userName : list[0].userName,
-                //     status : "A" // hard coding status
-                //     // 권한 등 필요한 정보 추가 
-                // };
+                let user = {
+                    userId : list[0].userId,
+                    userName : list[0].userName,
+                    status : "A" // hard coding status
+                    // 권한 등 필요한 정보 추가 
+                };
 
-                // token = jwt.sign(user, JWT_KEY, {expiresIn : '1h'});
-                // console.log(token);
+                token = jwt.sign(user, JWT_KEY, {expiresIn : '1h'});
+                console.log(token);
             } else {
                 msg="비밀번호를 확인해주세요.";
             }
@@ -80,7 +80,7 @@ router.get("/:userId", async (req, res) =>{
         // });
 
         // 2. 조인 쿼리 만들어서 하나로 리턴
-        let sql = "SELECT U.*, COUNT(F.CONTENT) AS feedCount "
+        let sql = "SELECT U.*, IFNULL(COUNT(F.CONTENT), 0) AS feedCount "
                     +"FROM TBL_USER U LEFT JOIN TBL_FEED F "
                     +"ON U.USERID = F.USERID "
                     +"WHERE U.USERID = ? "
