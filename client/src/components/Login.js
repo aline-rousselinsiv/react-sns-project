@@ -2,13 +2,15 @@ import React, { useRef } from 'react';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import "../css/login.css";
 
 function Login() {
   let idRef = useRef();
   let pwdRef = useRef();
   let navigate = useNavigate();
 
-  function handleLogin(){
+  function handleLogin(e){
+    e.preventDefault();
     let param = {
             userId : idRef.current.value,
             pwd : pwdRef.current.value
@@ -34,34 +36,49 @@ function Login() {
   }  
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        minHeight="100vh"
-      >
-        <Typography variant="h4" gutterBottom>
-          로그인
-        </Typography>
-        <TextField inputRef={idRef} label="ID" variant="outlined" margin="normal" fullWidth />
-        <TextField
-          inputRef={pwdRef}
-          label="Password"
-          variant="outlined"
-          margin="normal"
-          fullWidth
-          type="password"
-        />
-        <Button onClick={handleLogin} variant="contained" color="primary" fullWidth style={{ marginTop: '20px' }}>
-          로그인
-        </Button>
-        <Typography variant="body2" style={{ marginTop: '10px' }}>
-          회원아니셈 ? <Link to="/join">회원가입</Link>
-        </Typography>
-      </Box>
-    </Container>
+    <div className="login">
+      <div className="card">
+        <div className="left">
+          <h1>FOODIE</h1>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero cum,
+            alias totam numquam ipsa exercitationem dignissimos, error nam,
+            consequatur.
+          </p>
+          <span>Don't you have an account?</span>
+          <Link to="/signup">
+            <button>Sign up</button>
+          </Link>
+        </div>
+        <div className="right">
+          <h1>Login</h1>
+          {/* <form>
+            <input inputRef="idRef" type="text" placeholder="Username" />
+            <input inputRef="pwdRef" type="password" placeholder="Password" />
+            <button onClick={handleLogin}>Login</button>
+          </form> */}
+          <Box
+              component="form"
+              sx={{ '& > :not(style)': { m: 1, width: '25ch' } }}
+              noValidate
+              autoComplete="off"
+            >
+              <TextField inputRef={idRef} id="standard-basic" label="username" variant="standard" />
+              <TextField
+              inputRef={pwdRef}
+              id="standard-password-input"
+              label="password"
+              type="password"
+              autoComplete="current-password"
+              variant="standard"
+            />
+          </Box>
+          <form onSubmit={handleLogin}>  
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }
 

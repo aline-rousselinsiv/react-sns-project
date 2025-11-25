@@ -6,12 +6,12 @@ const jwt = require('jsonwebtoken');
 const JWT_KEY = "server_secret_key"; // 해시 함수 실행 위해 사용할 키로 아주 긴 랜덤한 문자를 사용하길 권장하며, 노출되면 안됨.
 
 router.post("/join", async (req, res) =>{
-    let {userId, pwd, userName} = req.body;
+    let {userId, pwd, userName, email} = req.body;
     try {
         const hashPwd = await bcrypt.hash(pwd, 10);
         console.log(hashPwd);
-        let sql = "INSERT INTO TBL_USER(USERID, PWD, USERNAME, CDATETIME, UDATETIME) VALUES(?, ?, ?, NOW(), NOW())";
-        let result = await db.query(sql, [userId, hashPwd, userName]);
+        let sql = "INSERT INTO TBL_USER(USERID, PWD, USERNAME, CDATETIME, UDATETIME, EMAIL) VALUES(?, ?, ?, NOW(), NOW(), ?)";
+        let result = await db.query(sql, [ userId, hashPwd, userName, email ]);
         // console.log(list);
         res.json({
             msg : "success",
@@ -97,5 +97,46 @@ router.get("/:userId", async (req, res) =>{
 
 })
 
+router.post("/username", async (req, res) =>{
+    let {userId} = req.body;
+    try {
+        let sql = "SELECT * FROM TBL_USER WHERE USERID = ?";
+        let [list] = await db.query(sql, [userId]);
+        let msg = "";
+        let result = "";
+        if(list.length > 0){
+            result = "existing ID";
+         } else {
+            result = "ID available";
+         }
+        res.json({
+            result : result
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
+})
+
+router.post("/email", async (req, res) =>{
+    let {email} = req.body;
+    try {
+        let sql = "SELECT * FROM TBL_USER WHERE EMAIL = ?";
+        let [list] = await db.query(sql, [email]);
+        let msg = "";
+        let result = "";
+        if(list.length > 0){
+            result = "existing email";
+         } else {
+            result = "email available";
+         }
+        res.json({
+            result : result
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
+})
 
 module.exports = router;

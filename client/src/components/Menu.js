@@ -2,10 +2,22 @@ import React from 'react';
 import { Drawer, List, ListItem, ListItemText, Typography, Toolbar, ListItemIcon } from '@mui/material';
 import { Home, Add, AccountCircle } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import Mui from './Mui';
+import UserProfileBox from './UserProfileBox';
+import { NavLink } from "react-router-dom";
 
 function Menu() {
+  const navItemStyles = {
+    "&.active .MuiListItemText-primary": {
+      color: "rgba(88, 168, 139, 1)",
+      fontWeight: "bold",
+    },
+    "& .MuiListItemText-primary": {
+      color: "grey",
+    },
+  };
   return (
+    <>
+    
     <Drawer
       variant="permanent"
       sx={{
@@ -14,40 +26,33 @@ function Menu() {
         '& .MuiDrawer-paper': {
           width: 240, // Drawer 내부의 너비 설정
           boxSizing: 'border-box',
+          top: '180px',
+          position: 'sticky', // <--- make it sticky
+          height: 'calc(100vh - 180px)' // keep it within viewport
         },
       }}
     >
       <Toolbar />
-      <Typography variant="h6" component="div" sx={{ p: 2 }}>
-        SNS 메뉴
-      </Typography>
-      <List>
-        <ListItem button component={Link} to="/feed">
-          <ListItemIcon>
-            <Home />
-          </ListItemIcon>
-          <ListItemText primary="피드" />
+      <UserProfileBox></UserProfileBox>
+      <List sx={{ '& .MuiListItemText-primary': { color: 'grey' }, marginLeft : '35px' }}>
+        <ListItem button component={NavLink} to="/feed" sx={navItemStyles}>
+          <ListItemText primary="FEED" />
         </ListItem>
-        <ListItem button component={Link} to="/register">
-          <ListItemIcon>
-            <Add />
-          </ListItemIcon>
-          <ListItemText primary="등록" />
+        <ListItem button component={NavLink} to="" sx={navItemStyles}>
+          <ListItemText primary="MESSAGES" />
         </ListItem>
-        <ListItem button component={Link} to="/mypage">
-          <ListItemIcon>
-            <AccountCircle />
-          </ListItemIcon>
-          <ListItemText primary="마이페이지" />
+        <ListItem button component={NavLink} to="" sx={navItemStyles}>
+          <ListItemText primary="FRIENDS" />
         </ListItem>
-        <ListItem button component={Link} to="/mui">
-          <ListItemIcon>
-            <Home />
-          </ListItemIcon>
-          <ListItemText primary="mui 테스트" />
+        <ListItem button component={NavLink} to="/mypage" sx={navItemStyles}>
+          <ListItemText primary="MY PROFILE" />
+        </ListItem>
+        <ListItem button component={NavLink} to="" sx={navItemStyles}>
+          <ListItemText primary="SAVED POSTS" />
         </ListItem>
       </List>
     </Drawer>
+    </>
   );
 };
 

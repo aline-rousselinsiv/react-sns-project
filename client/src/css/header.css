@@ -1,0 +1,23 @@
+/* @import "../../style.scss"; */
+
+.navbar {
+    background-color: rgba(169, 211, 195, 1);
+    width: 100%;
+    height: 180px;
+    position: sticky;
+    top:0;
+}
+
+.leftPart {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    line-height: 180px;
+    margin-left: 30px;
+}
+
+span {
+    font-weight: bold;
+    font-size: 80px;
+    color: white;
+}

@@ -1,0 +1,68 @@
+.rightBar {
+  width: 250px;
+  height: 500px;
+  position: fixed; /* or fixed if you want it to stay while scrolling */
+  top: 230px; /* distance from top of the page */
+  right: 50px; /* distance from right side of the page */
+  background-color: #fff;
+  border-radius: 10px; /* makes it look like a card */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* floating effect */
+  padding: 20px;
+  overflow-y: hidden; /*scroll if content overflows */
+  z-index: 100; /* make sure it floats above other content */
+}
+
+.rightBar .container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rightBar .item span {
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.rightBar .user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rightBar .userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rightBar .userInfo img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.rightBar .online {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: green;
+  margin-left: -10px;
+  border: 2px solid white;
+}
+
+.rightBar .buttons button {
+  margin-left: 5px;
+  padding: 5px 10px;
+  border: none;
+  background-color: #1976d2;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rightBar .buttons button:last-child {
+  background-color: #aaa;
+}

@@ -1,0 +1,87 @@
+.register {
+  height: 100vh;
+  background-color: rgba(169, 211, 195, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .card {
+    width: 50%;
+    display: flex;
+    flex-direction: row-reverse;
+    background-color: white;
+    border-radius: 10px;
+    min-height: 600px;
+    overflow: hidden;
+
+    .left {
+      flex: 1;
+      background:
+        url("../images/loginImg.avif")
+          center;
+      background-size: cover;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      color: white;
+
+      h1 {
+        font-size: 100px;
+        line-height: 100px;
+      }
+
+      span {
+        font-size: 14px;
+      }
+      
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: white;
+        color: rgba(88, 168, 139, 1);
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 8px;
+      }
+    }
+
+    .right {
+      flex: 1;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+      justify-content: center;
+
+      h1 {
+      color: #555;
+      margin-bottom: 0px;
+      }
+      
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        
+        input {
+        border: none;
+        border-bottom: 1px solid lightgray;
+        padding: 20px 10px;
+        }
+        
+        button {
+          width: 100%;
+          padding: 10px;
+          border: none;
+          background-color: rgba(88, 168, 139, 1);
+          color: white;
+          font-weight: bold;
+          cursor: pointer;
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+}
