@@ -1,11 +1,11 @@
 .writePostContainer {
   width: 1100px;
-  height: 150px;
+  min-height: 150px;
   margin-left: 100px;
   margin-top: 30px;
   margin-bottom: 50px;
-  position: sticky;
-  top:240px;
+  /* position: sticky; */
+  /* top:240px; */
   /* top: 200px; distance from top of the page */
   /* left: 200px; distance from right side of the page */
   background-color: #fff;

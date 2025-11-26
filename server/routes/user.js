@@ -80,15 +80,11 @@ router.get("/:userId", async (req, res) =>{
         // });
 
         // 2. 조인 쿼리 만들어서 하나로 리턴
-        let sql = "SELECT U.*, IFNULL(COUNT(F.CONTENT), 0) AS feedCount "
-                    +"FROM TBL_USER U LEFT JOIN TBL_FEED F "
-                    +"ON U.USERID = F.USERID "
-                    +"WHERE U.USERID = ? "
-                    +"GROUP BY U.USERID";
+        let sql = "SELECT * FROM TBL_USER WHERE USERID = ?";
         let [list] = await db.query(sql, [userId]);
-        // console.log(list);
+        console.log(list);
         res.json({
-            msg : "success",
+            result : "success", 
             info : list[0]
         });
     } catch (error) {
@@ -138,5 +134,6 @@ router.post("/email", async (req, res) =>{
     }
 
 })
+
 
 module.exports = router;

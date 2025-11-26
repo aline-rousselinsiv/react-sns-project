@@ -1,0 +1,260 @@
+
+import React, { useRef } from 'react';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
+import TextField from '@mui/material/TextField';
+import Avatar from '@mui/material/Avatar';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+
+import { useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
+
+function PostInput(){
+    let navigate = useNavigate();
+    const [tags, setTags] = useState([]);
+    const [input, setInput] = useState("");
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" && input.trim() !== "") {
+        const newTag = input.trim();
+        if (!tags.includes(newTag)) {
+            setTags([...tags, newTag]);
+        }
+        setInput("");
+        }
+    };
+
+    const removeTag = (tagToRemove) => {
+        setTags(tags.filter((t) => t !== tagToRemove));
+    };
+
+    const [files, setFile] = React.useState([]);
+    const handleFileChange = (event) => {
+        setFile(Array.from(event.target.files));
+    };
+    
+    // Post review function
+    let titleRef = useRef(null);
+    let restaurantRef = useRef(null);
+    let addressRef = useRef(null);
+    let contentRef = useRef(null);
+
+    function handlePost(){
+        const token = localStorage.getItem("token");
+        const decoded = jwtDecode(token);
+        if(titleRef.current.value == ""){
+            alert("Enter a title!");
+            return;
+        }
+        if(restaurantRef.current.value == ""){
+            alert("Enter the restaurant name!");
+            return;
+        }
+        if(addressRef.current.value == ""){
+            alert("Enter the restaurant's address!");
+            return;
+        }
+        if(contentRef.current.value == ""){
+            alert("Enter a description!");
+            return;
+        }
+        if(files.length == 0){
+            alert("Select at least one image !");
+            return;
+        }
+        let param = {
+            title : titleRef.current.value,
+            restaurant : restaurantRef.current.value,
+            address : addressRef.current.value,
+            content : contentRef.current.value
+        };
+        fetch("http://localhost:3010/feed/"+decoded.userId, {
+        method : "POST", 
+        headers : {
+            "Content-type" : "application/json"
+        },
+        body : JSON.stringify(param)
+        })
+        .then( res => res.json() )
+        .then(data => {
+            if(data.result){
+                console.log(data);
+                alert(data.msg);
+                fnUploadFile(data.result[0].insertId);
+            } else {
+                alert("에러가 발생했습니다.");
+            }
+        })
+    }
+
+    const fnUploadFile = (feedId)=>{
+    const formData = new FormData();
+        for(let i=0; i<files.length; i++){
+            formData.append("file", files[i]); 
+        } 
+        formData.append("feedId", feedId);
+        fetch("http://localhost:3010/feed/upload", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            // navigate("/feed"); // 원하는 경로
+        })
+        .catch(err => {
+            console.error(err);
+        });
+    }
+
+    return <>
+        <div style={{textAlign : "center"}}>
+            <Box
+                component="form"
+                sx={{ '& > :not(style)': { m: 1, width: '110ch' }, margin : "0 auto" }}
+                noValidate
+                autoComplete="off" 
+                >
+                <TextField inputRef={titleRef} id="standard-basic" label="Title" variant="standard" />
+                <TextField inputRef={restaurantRef} id="standard-basic" label="Restaurant" variant="standard" />
+                <TextField inputRef={addressRef} id="standard-basic" label="Address" variant="standard" />
+                <div
+                    style={{
+                        borderBottom : "1px grey solid",
+                        textAlign : "left",
+                        // justifyContent : "center",
+                        marginTop : "40px",
+                        marginBottom : "10px",
+                        color : "grey",
+                        display: "flex",
+                        flexDirection : "row",
+                        gap : " 20px",
+                        width: "110ch",        // ⭐ Same width as your TextFields
+                        margin: "0 auto",
+                        alignItems: "center"
+                    }}
+                >
+                    <div style={{}}>Tags</div>
+                    <div>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "8px",
+                                // border: "1px solid #ccc",
+                                padding: "8px",
+                                borderRadius: "6px",
+                                minHeight: "50px",
+                                // marginTop: "15px",
+                                width: '100ch', // match TextFields
+                                margin: '0 auto', // center it
+                            }}
+                        >
+                        {tags.map((tag, index) => (
+                            <Box
+                                key={index}
+                                sx={{
+                                    background: "#58a88b",
+                                    color: "white",
+                                    px: 1.5,
+                                    py: 0.5,
+                                    borderRadius: "20px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                }}
+                            >
+                                {tag}
+                                <Box
+                                sx={{ cursor: "pointer", fontWeight: "bold" }}
+                                onClick={() => removeTag(tag)}
+                                >
+                                ×
+                                </Box>
+                            </Box>
+                            ))}
+                            <input
+                                style={{ justifyContent : "center", border: "none", outline: "none", flexGrow: 1, minWidth: '100px'}}
+                                type="text"
+                                placeholder="Type & press Enter"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                        </Box>
+                    </div>
+                </div>
+                
+                <TextField
+                    
+                    id="standard-read-only-input"
+                    defaultValue="Price"
+                    variant="standard"
+                    slotProps={{
+                        input: {
+                        readOnly: true,
+                        sx : {color : "grey", marginTop : "15px"}
+                        },
+                    }}
+                />
+                <TextField
+                    inputRef={contentRef}
+                    id="outlined-multiline-static"
+                    label="Description"
+                    multiline
+                    rows={4}
+                    slotProps={{
+                        input: {    
+                        sx : {color : "grey", marginTop : "20px"}
+                        },
+                    }}
+                />
+                
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>   
+                <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="file-upload"
+                    type="file"
+                    onChange={handleFileChange}
+                    multiple
+                />
+                <label htmlFor="file-upload">
+                    <IconButton component="span">
+                        <AddAPhotoIcon sx={{ color: 'black', justifyContent:"center" }} />
+                    </IconButton>
+                </label>
+                
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {files.length > 0 && files.map((file) => (
+                        <Avatar
+                        key={file.name}
+                        alt="첨부된 이미지"
+                        src={URL.createObjectURL(file)}
+                        sx={{ width: 56, height: 56, marginLeft: 2, justifyContent : "center" }}
+                        />
+                    ))}
+                </Box>
+
+                <Stack spacing={2} direction="row">
+                    <Button
+                    onClick={handlePost}
+                    variant="contained"
+                    sx={{
+                        backgroundColor: 'rgba(169, 211, 195, 1)',
+                        '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                    }}
+                    >
+                    Post
+                    </Button>
+                </Stack>
+            </Box>  
+        </div>
+    </>
+}
+
+export default PostInput;

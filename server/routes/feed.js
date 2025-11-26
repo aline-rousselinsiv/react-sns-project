@@ -35,18 +35,19 @@ router.post('/upload', upload.array('file'), async (req, res) => {
     }
 });
 
-router.get("/:userId", async (req, res) =>{
-    console.log(`${req.protocol}://${req.get("host")}`);
-    let {userId} = req.params;
+router.get("/", async (req, res) =>{
+    // console.log(`${req.protocol}://${req.get("host")}`);
+    
     try {
-        let sql = "SELECT * "
-                +"FROM TBL_FEED F "
-                +"INNER JOIN TBL_FEED_IMG I ON F.ID = I.FEEDID "
-                +"WHERE USERID = ?";
-        let [list] = await db.query(sql, [userId]);
+        let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH " 
+                    +"FROM tbl_FEED F "
+                    +"INNER JOIN TBL_USER U ON F.USERID = U.USERID "
+                    +"ORDER BY F.cDatetime DESC";
+        let [list] = await db.query(sql);
+        // console.log(list);
         res.json({
-            msg : "success",
-            list
+            result : "success",
+            list : list
         });
     } catch (error) {
         console.log(error);
@@ -70,11 +71,11 @@ router.delete("/:feedId", authMiddleware, async (req, res) =>{
 
 router.post('/:userId', async (req, res) => {
     let {userId} = req.params;
-    let { content } = req.body;
+    let { content, title, address, restaurant } = req.body;
     console.log(req.body);
     try {
-        let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME) VALUES(?, ?, NOW())";
-        let result = await db.query(sql, [userId, content]);
+        let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT) VALUES(?, ?, NOW(), ?, ?, ?)";
+        let result = await db.query(sql, [userId, content, title, address, restaurant]);
         console.log("What has been posted ==>", result);
         res.json({
             msg : "추가되었습니다 !",

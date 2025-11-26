@@ -6,3 +6,14 @@
   padding: 15px;      /* more padding for feed */
   margin: 0 auto 20px; /* center horizontally, bottom margin */
 }
+
+.writePost-btn {
+  /* border: solid 1px black;
+  border-radius: 50%;
+  width: 35px;
+  text-align: center;
+  justify-content: center;
+  align-items: center; */
+  margin-left: auto;
+  cursor: pointer;
+}
