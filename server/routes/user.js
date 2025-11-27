@@ -82,7 +82,7 @@ router.get("/:userId", async (req, res) =>{
         // 2. 조인 쿼리 만들어서 하나로 리턴
         let sql = "SELECT * FROM TBL_USER WHERE USERID = ?";
         let [list] = await db.query(sql, [userId]);
-        console.log(list);
+        // console.log(list);
         res.json({
             result : "success", 
             info : list[0]

@@ -4,6 +4,7 @@ const db = require("./db"); // we import our db into ur server and save it into 
 const app = express()
 const userRouter = require("./routes/user")
 const feedRouter = require("./routes/feed")
+const commentsRouter = require("./routes/comments")
 const path = require('path');
 
 app.use(cors({
@@ -17,6 +18,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // router 영역
 app.use("/user", userRouter);
 app.use("/feed", feedRouter);
+app.use("/comments", commentsRouter);
 
 
 app.listen(3010, ()=>{

@@ -1,0 +1,33 @@
+.bottom-section{
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    gap:20px;
+
+    .comment-btn:hover {
+        cursor: pointer;
+    }
+}
+
+.top-title{
+    text-align: center;
+    color: black;
+}
+
+.comment-content{
+    border-bottom: 1px solid rgb(211, 211, 211);
+}
+
+.comment-post{
+    margin-top: 10px;
+}
+
+.comment-input{
+    margin-top: 10px;
+}
+
+.comment-input input{
+    width: 830px;
+    height: 40px;
+    border: solid rgb(158, 158, 158) 1px;
+}

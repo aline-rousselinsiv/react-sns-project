@@ -35,25 +35,74 @@ router.post('/upload', upload.array('file'), async (req, res) => {
     }
 });
 
-router.get("/", async (req, res) =>{
-    // console.log(`${req.protocol}://${req.get("host")}`);
+// router.get("/", async (req, res) =>{
+//     // console.log(`${req.protocol}://${req.get("host")}`);
     
+//     try {
+//         let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH, I.* " 
+//                     +"FROM tbl_FEED F "
+//                     +"INNER JOIN TBL_USER U ON F.USERID = U.USERID "
+//                     +"INNER JOIN TBL_FEED_IMG I ON F.ID = I.FEEDID "
+//                     +"ORDER BY F.cDatetime DESC";
+//         let [list] = await db.query(sql);
+//         // console.log(list);
+//         res.json({
+//             result : "success",
+//             list : list
+//         });
+//     } catch (error) {
+//         console.log(error);
+//     }
+
+// })
+
+router.get("/", async (req, res) => {
     try {
-        let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH " 
-                    +"FROM tbl_FEED F "
-                    +"INNER JOIN TBL_USER U ON F.USERID = U.USERID "
-                    +"ORDER BY F.cDatetime DESC";
-        let [list] = await db.query(sql);
-        // console.log(list);
-        res.json({
-            result : "success",
-            list : list
+        // 1️⃣ Get all posts with user info
+        let [feeds] = await db.query(`
+            SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG
+            FROM TBL_FEED F
+            INNER JOIN TBL_USER U ON F.USERID = U.USERID
+            ORDER BY F.cDatetime DESC
+        `);
+
+        // 2️⃣ Get all images for these posts
+        const feedIds = feeds.map(f => f.id); // extract all post IDs
+
+        let images = [];
+        if (feedIds.length > 0) {
+            [images] = await db.query(`
+                SELECT * FROM TBL_FEED_IMG 
+                WHERE FEEDID IN (?)
+            `, [feedIds]);
+            //  console.log("Found images:", images); // DEBUG: Check what images are returned
+        }
+
+        // 3️⃣ Attach images to each post
+        const posts = feeds.map(feed => {
+            return {
+                ...feed,
+                images: images
+                    .filter(img => img.feedId === feed.id)
+                    .map(img => ({
+                        imgId: img.ID,
+                        imgPath: img.imgPath,
+                        imgName: img.imgName
+                    }))
+            };
         });
+
+        // 4️⃣ Send JSON
+        res.json({
+            result: "success",
+            list: posts
+        });
+
     } catch (error) {
         console.log(error);
+        res.json({ result: "error" });
     }
-
-})
+});
 
 router.delete("/:feedId", authMiddleware, async (req, res) =>{
     let {feedId} = req.params;
@@ -76,7 +125,7 @@ router.post('/:userId', async (req, res) => {
     try {
         let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT) VALUES(?, ?, NOW(), ?, ?, ?)";
         let result = await db.query(sql, [userId, content, title, address, restaurant]);
-        console.log("What has been posted ==>", result);
+        // console.log("What has been posted ==>", result);
         res.json({
             msg : "추가되었습니다 !",
             result : result

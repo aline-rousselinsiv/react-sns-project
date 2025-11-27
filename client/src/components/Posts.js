@@ -1,13 +1,23 @@
+import * as React from 'react';
 import "../css/posts.css";
+import "../css/comments.css";
 import { Pen, Soup, MapPin, HandCoins } from 'lucide-react';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import food1 from "../images/food1.jpeg";
+import { MessageSquareText, Heart, BookMarked } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { cloneElement } from "react";
+
+import Comments from './Comments';
 
 function Posts ({children}) {
 
@@ -25,7 +35,7 @@ function Posts ({children}) {
                 .then( res => res.json() )
                 .then(data => {
                     if(data.result == "success"){
-                        console.log(data);
+                        console.log("Data == >", data);
                         setPosts(data.list);
                     }
                 })
@@ -41,11 +51,25 @@ function Posts ({children}) {
         handleGetFeed();
     }, [])
 
+    // Modal for comments
+
+    const [open, setOpen] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
     return <>
 
         {posts.length > 0 ? posts.map((post, index) => (
+            
             <div className="postContainer">
                 <div className="postElements" key={index}>
+                    {console.log("Post image path:", post.images)}
                     {cloneElement(children, { post })}
                     <div className="titleSection">
                         <div ><Pen size={35} /></div>
@@ -62,23 +86,65 @@ function Posts ({children}) {
                         <div className="restaurantPrice">Budget</div>
                     </div>
                     <div className="content">
-                        {post.content}
+                        {post.CONTENT}
                     </div>
                     <div style={{marginTop : "50px", marginBottom : "50px"}}>
                         <Slider className="custom-slider" dots={true} infinite={true} speed={500} slidesToShow={3} slidesToScroll={3}>
-                            <img src={food1} alt="img1" />
-                            <img src={food1} alt="img2" />
-                            <img src={food1} alt="img3" />
-                            <img src={food1} alt="img3" />
-                            <img src={food1} alt="img3" />
-                            <img src={food1} alt="img3" />
+                            {/* <img src={post.imgPath} alt={post.imgName} /> */}
+                            {post.images?.map(img => (
+                                <img key={img.imgId} src={img.imgPath} alt={img.imgName} />
+                            ))}
                         </Slider>
+                    </div>
+                    <div className='bottom-section'>
+                        <div className='like-btn'><Heart /></div>
+                        <div className='comment-btn'>
+                            <React.Fragment>
+                                <MessageSquareText onClick={handleClickOpen} />
+                                 {/* <IconButton color="primary">
+                                    <CommentIcon />
+                                </IconButton> */}
+                                <Dialog
+                                    open={open}
+                                    onClose={handleClose}
+                                    aria-labelledby="alert-dialog-title"
+                                    aria-describedby="alert-dialog-description"
+                                    BackdropProps={{
+                                    sx: {
+                                        background : "rgba(0,0,0,0)"
+                                        },
+                                    }}
+                                    PaperProps={{
+                                        sx: {
+                                            boxShadow : '0 4px 20px rgba(0, 0, 0, 0.1)',
+                                            minWidth: "1000px",
+                                            minHeight: "250px",
+                                            border: "2px solid rgba(190, 190, 190, 1)",  // blue border
+                                            borderRadius: "16px",          // rounded corners
+                                            padding: 2,
+                                        },
+                                    }}
+                                >
+                                    <DialogContent>
+                                        <DialogContentText id="alert-dialog-description">
+                                            <Comments></Comments>
+                                        </DialogContentText>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button >Post</Button>
+                                        <Button onClick={handleClose}>Close</Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </React.Fragment>
+                        </div>
+                        <div className='save-btn'><BookMarked /></div>
                     </div>
                     
                 </div>
             </div>
         )) : "등록된 피드가 없습니다. 피드를 등록해보세요!"}
         
+            
     </>
 }
 
