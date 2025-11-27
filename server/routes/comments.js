@@ -4,14 +4,46 @@ const db = require("../db");
 const authMiddleware = require("../auth");
 const multer = require('multer');
 
-router.get("/", async (req, res) =>{
+router.get("/:postId", async (req, res) =>{
+    let {postId} = req.params;
     try {
-        let sql = "SELECT * FROM TBL_COMMENTS";
-        let [list] = await db.query(sql);
-        console.log(list);
+        let sql = "SELECT * FROM TBL_COMMENTS WHERE POST_ID = ?";
+        let [list] = await db.query(sql, [postId]);
+        // console.log(list);
         res.json({
             result : "success", 
-            list
+            list : list
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
+})
+
+router.post("/:userId", async (req, res) => {
+    let { userId } = req.params;
+    let { postId, content } = req.body;
+
+    try {
+        let sql = "INSERT INTO TBL_COMMENTS (POST_ID, USER_ID, CONTENT) VALUES(?, ?, ?)";
+        let result = await db.query(sql, [postId, userId, content]);
+
+        res.json({
+            result: "success"
+        });
+    } catch (error) {
+        console.log("DB Error:", error);
+        res.status(500).json({ result: "error", message: error.message });
+    }
+});
+
+router.delete("/:commentId", async (req, res) =>{
+    let {commentId} = req.params;
+    try {
+        let sql = "DELETE FROM TBL_COMMENTS WHERE COMMENT_ID = ?";
+        let result = await db.query(sql, [commentId]);
+        res.json({
+            result : "success"
         });
     } catch (error) {
         console.log(error);

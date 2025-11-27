@@ -41,6 +41,7 @@ router.post('/login', async (req, res) => {
                 let user = {
                     userId : list[0].userId,
                     userName : list[0].userName,
+                    profilePic : list[0].imgPath,
                     status : "A" // hard coding status
                     // 권한 등 필요한 정보 추가 
                 };

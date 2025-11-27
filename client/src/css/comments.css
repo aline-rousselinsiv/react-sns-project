@@ -16,6 +16,22 @@
 
 .comment-content{
     border-bottom: 1px solid rgb(211, 211, 211);
+    
+    .comment-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        
+        .delete-btn {
+        margin-left: auto;
+        }
+        .delete-btn:hover {
+            cursor: pointer;
+        }
+
+    }
+
+    
 }
 
 .comment-post{
@@ -30,4 +46,14 @@
     width: 830px;
     height: 40px;
     border: solid rgb(158, 158, 158) 1px;
+}
+
+.noComment {
+    padding : 25px;
+    text-align: center;
+}
+
+.content-section {
+    display: flex;
+    flex-direction: row;
 }

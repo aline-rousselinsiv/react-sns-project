@@ -3,20 +3,18 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import profileWomanImg from "../images/profileWomanImg.jpg";
 import "../css/userProfileBox.css";
 import "../css/comments.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PostInput from './PostInput';
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 
-function UserProfilePost({ variant, post, comment   }){
+function UserProfilePost({ variant, post, comment, onSubmitComment }){
     const [writePost, setWritePost] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
-    
-
     const navigate = useNavigate();
     let [userInfo, setUserInfo] = useState();
-    console.log("user info ==>", userInfo);  
+    let commentRef = useRef();
 
     function handleUserInfo(){
         if(token){
@@ -35,6 +33,16 @@ function UserProfilePost({ variant, post, comment   }){
     useEffect(()=>{
         handleUserInfo();
     }, [])
+
+    function handleKeyPress(e) {
+    if (e.key === "Enter") {
+            const content = commentRef.current.value.trim();
+            if (!content) return;
+            onSubmitComment?.({ content }); // send content + postId
+            console.log(content);
+            commentRef.current.value = "";
+        }
+    }
 
     return <>
         <Box
@@ -56,7 +64,11 @@ function UserProfilePost({ variant, post, comment   }){
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
                 <div className="comment-input">
-                    <input placeholder="write a comment & press enter"></input>
+                    <input 
+                        ref ={commentRef} 
+                        placeholder="write a comment & press enter"
+                        onKeyDown={handleKeyPress}
+                    ></input>
                 </div>
                 </>
             :

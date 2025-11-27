@@ -21,12 +21,13 @@ import Comments from './Comments';
 
 function Posts ({children}) {
 
+    const token = localStorage.getItem("token");
+    
     let navigate = useNavigate();
     let [posts, setPosts] = useState([]);
 
     function handleGetFeed(){
         // let userId = 'test1';
-        const token = localStorage.getItem("token");
     
         if(token){
           const decoded = jwtDecode(token);
@@ -54,14 +55,53 @@ function Posts ({children}) {
     // Modal for comments
 
     const [open, setOpen] = React.useState(false);
+    const [selectedPostId, setSelectedPostId] = useState(null);
 
-    const handleClickOpen = () => {
+    const handleClickOpen = (postId) => {
         setOpen(true);
+        setSelectedPostId(postId);  // store the ID
     };
 
     const handleClose = () => {
         setOpen(false);
     };
+
+    function handlePostComment (content, postId){
+        console.log(content);
+
+        if(token){
+
+            const decoded = jwtDecode(token);
+            let param = {
+                postId: postId,
+                content: content.content
+            };
+            if (content === "") {
+                alert("Please write something.");
+                return;
+            }
+             fetch("http://localhost:3010/comments/"+decoded.userId, {
+                method : "POST", 
+                headers : {
+                    "Content-type" : "application/json"
+                },
+                body : JSON.stringify(param)
+             })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result == "success"){
+                    alert("댓글 추가 성공 !");
+                } else {
+                    alert("error");
+                }
+            })  
+
+        } else {
+          // 로그인 페이지 이동
+          alert("로그인 먼저 하세요.");
+          navigate("/");
+        }
+    }
 
     return <>
 
@@ -100,7 +140,8 @@ function Posts ({children}) {
                         <div className='like-btn'><Heart /></div>
                         <div className='comment-btn'>
                             <React.Fragment>
-                                <MessageSquareText onClick={handleClickOpen} />
+                                <MessageSquareText  onClick={() => handleClickOpen(post.id)} />
+                                    {console.log("Post ID passed to Comments:", post.POST_ID)}
                                  {/* <IconButton color="primary">
                                     <CommentIcon />
                                 </IconButton> */}
@@ -127,11 +168,14 @@ function Posts ({children}) {
                                 >
                                     <DialogContent>
                                         <DialogContentText id="alert-dialog-description">
-                                            <Comments></Comments>
+                                            <Comments 
+                                                postId={selectedPostId} 
+                                                onSubmitComment={handlePostComment}
+                                            />
                                         </DialogContentText>
                                     </DialogContent>
                                     <DialogActions>
-                                        <Button >Post</Button>
+                                        {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
                                         <Button onClick={handleClose}>Close</Button>
                                     </DialogActions>
                                 </Dialog>
