@@ -36,7 +36,7 @@ function Feed() {
 
   return (
     <>
-      <WritePost>
+      <WritePost variant="write-post">
         <UserProfilePost variant="writePost"></UserProfilePost>
       </WritePost>
       <Posts>

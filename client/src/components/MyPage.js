@@ -5,43 +5,211 @@ import { useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import WritePost from './WritePost';
+import "../css/writePost.css";
+import IconButton from '@mui/material/IconButton';
+import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 
 function MyPage() {
-  let [info, setInfo] = useState({});
-  let navigate = useNavigate();
-  // let userId = 'test1';
+  const [userInfo, setUserInfo] = useState(null);
+  const [formData, setFormData] = useState({
+    userName: "",
+    userId: "",
+    intro: "",
+    email: ""
+  });
+  const [willEdit, setWillEdit] = useState(false);
+  const navigate = useNavigate();
 
-  function handleUserInfo(){
-    // 원래 아이디를 jwt 토큰에서 꺼내야함
+  // Fetch token and decode
+  useEffect(() => {
     const token = localStorage.getItem("token");
-    
-    if(token){
-      const decoded = jwtDecode(token);
-      console.log("decoded token ==> ", decoded);
-      fetch("http://localhost:3010/user/"+decoded.userId)
-        .then( res => res.json() )
-        .then(data => {
-            console.log(data.info);
-            setInfo(data.info);
-        })
-    } else {
-      // 로그인 페이지 이동
+    if (!token) {
       alert("로그인 먼저 하세요.");
-      navigate("/");
+      navigate("/login");
+      return;
     }
 
-        
+    const decoded = jwtDecode(token);
+
+    // Fetch full user info from DB
+    fetch(`http://localhost:3010/user/${decoded.userId}`)
+      .then(res => res.json())
+      .then(data => {
+        // Merge decoded token info with DB info if needed
+        setUserInfo({
+          ...decoded,        // keep token info
+          ...data.info       // overwrite with DB info
+        });
+      })
+      .catch(err => {
+        console.error("Failed to fetch user info:", err);
+        setUserInfo(decoded); // fallback to token
+      });
+  }, [navigate]);
+
+  // Update formData whenever userInfo changes
+  useEffect(() => {
+    if (userInfo) {
+      setFormData({
+        userName: userInfo.userName || "",
+        userId: userInfo.userId || "",
+        intro: userInfo.intro || "",
+        email: userInfo.email || "",
+        profilePic : userInfo.pathImg,
+        followers : userInfo.follower
+      });
     }
+  }, [userInfo]);
+
+  if (!userInfo) return null;
+
   
-  useEffect(()=>{
-      // console.log("서버에서 요청해서 제품 목록을 가져오는 부분");
-      handleUserInfo();
-  }, [])
 
   return (
     <>
-      <WritePost variant="myProfile">
-      </WritePost>
+      {/* <WritePost variant="myProfile" userInfo={userInfo} setUserInfo={setUserInfo}>
+      </WritePost> */}
+      <div className="myProfileContainer">
+                <div className="profile-picture-wrapper">
+                    <img 
+                        src={userInfo?.profilePic}
+                        alt="profile" 
+                        className="profile-picture"
+                    />
+                </div>
+                <div className="user-socials-wrapper">
+                    <div className="user-socials">
+                        <div className="user-socials-details">
+                            <div className="bold">{userInfo?.posts}</div>
+                            <div>posts</div>
+                        </div>
+                        <div className="user-socials-details">
+                            <div className="bold">{userInfo?.followers}</div>
+                            <div>followers</div>
+                        </div >
+                        <div className="user-socials-details">
+                            <div className="bold">{userInfo?.following}</div>
+                            <div>following</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="camera-icon">
+                    <label htmlFor="file-upload">
+                        <IconButton component="span">
+                            <AddAPhotoIcon sx={{ color: 'black', justifyContent:"center" }} />
+                        </IconButton>
+                    </label>
+                </div>
+                <div className="user-info">
+                    <div className="user-info-details">
+                        <div className="bold">Name</div>
+                        {willEdit == false ?
+                            <div>{userInfo?.userName}</div>
+                        :
+                            <div><input
+                                type="text"
+                                value={formData.userName}
+                                onChange={(e) => setFormData({...formData, userName: e.target.value})}
+                            ></input></div>
+                        }
+                    </div>
+                    <div className="user-info-details">
+                        <div className="bold">UserName</div>
+                        <div>
+                        {willEdit == false ?
+                        <div>@{userInfo?.userId}</div>
+                        :
+                            <div><input
+                                type="text"
+                                value={formData.userId}
+                                onChange={(e) => setFormData({...formData, userId: e.target.value})}
+                            ></input></div>
+                        }
+                        </div>
+                    </div>
+                    <div className="user-info-details">
+                        <div className="bold">Email</div>
+                        <div>
+                        {willEdit == false ?
+                        <div>{userInfo?.email}</div>
+                        :
+                            <div><input
+                                type="text"
+                                value={formData.email}
+                                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                            ></input></div>
+                        }
+                        </div>
+                    </div>
+                </div>
+                <div className="user-introduction">
+                    <div className="bold">About me</div>
+                    <div>
+                    {willEdit == false ?
+                    <div>{userInfo?.intro}</div>
+                    :
+                        <div><textarea
+                                cols={55}
+                                rows={5}
+                                type="text"
+                                value={formData.intro}
+                                onChange={(e) => setFormData({...formData, intro: e.target.value})}
+                        ></textarea></div>
+                    }
+                    </div>
+                </div>
+                {willEdit == false ?
+                    <div className="edit-btn">
+                        <DialogActions sx={{ justifyContent: "center" }}>
+                            {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
+                            <Button onClick={()=> {
+                                setWillEdit(true);
+                            }} >EDIT</Button>
+                        </DialogActions>
+                    </div>
+                :
+                    <div className="save-btn">
+                        <DialogActions sx={{ justifyContent: "center" }}>
+                            {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
+                            <Button onClick={()=> {
+                                fetch("http://localhost:3010/user", {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(formData),
+                                    })
+                                    .then((res) => res.json())
+                                    .then((data) => {
+                                        if(data.result == "success"){
+                                            console.log("Updated successfully:", data);
+                                            // Refetch the updated user info from backend
+                                            const token = localStorage.getItem("token");
+                                            const decoded = jwtDecode(token);
+                                            fetch(`http://localhost:3010/user/${formData.userId}`)
+                                                .then(res => res.json())
+                                                .then(data => {
+                                                    setUserInfo({
+                                                      ...decoded,
+                                                      ...data.info
+                                                    }); // update userInfo with latest DB values
+                                                    alert("Profile updated!");
+                                                    setWillEdit(false);
+                                                });
+                                        } else {
+                                            alert("there's a problem..");
+                                        }
+                                        
+                                    })
+                            }} >SAVE</Button>
+                        </DialogActions>
+                    </div>
+                }
+                
+            </div>
     </>
   );
 }

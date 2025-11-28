@@ -7,7 +7,7 @@ const multer = require('multer');
 router.get("/:postId", async (req, res) =>{
     let {postId} = req.params;
     try {
-        let sql = "SELECT * FROM TBL_COMMENTS WHERE POST_ID = ?";
+        let sql = "SELECT C.*, U.*  FROM TBL_COMMENTS C INNER JOIN TBL_USER U ON U.USERID = C.USER_ID WHERE POST_ID = ?";
         let [list] = await db.query(sql, [postId]);
         // console.log(list);
         res.json({

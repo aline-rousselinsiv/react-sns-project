@@ -32,7 +32,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
     }
     useEffect(()=>{
         handleUserInfo();
-    }, [])
+    }, [userInfo])
 
     function handleKeyPress(e) {
     if (e.key === "Enter") {
@@ -82,8 +82,8 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                         {variant == "post" ? post?.USERNAME 
-                        : variant == "comment" ? comment?.USER_ID 
-                        : decoded?.userName
+                        : variant == "comment" ? comment?.userName
+                        : userInfo?.userName
                         }
                     </Typography>
                     <Typography variant="body2" sx={{ color: 'grey' }}>

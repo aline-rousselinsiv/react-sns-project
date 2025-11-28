@@ -27,7 +27,12 @@ router.post('/login', async (req, res) => {
     let {userId, pwd} = req.body;
     console.log(req.body);
     try {
-        let sql = "SELECT * FROM TBL_USER WHERE USERID = ?";
+        let sql = "SELECT u.*, "
+                +"COUNT(f.id) AS post_cnt "
+                +"FROM tbl_user u "
+                +"LEFT JOIN tbl_feed f ON u.userId = f.userId "
+                +"WHERE U.USERID = ? "
+                +"GROUP BY u.userId ";
         let [list] = await db.query(sql, [userId]);
         let msg = "";
         let result = "fail";
@@ -41,7 +46,12 @@ router.post('/login', async (req, res) => {
                 let user = {
                     userId : list[0].userId,
                     userName : list[0].userName,
+                    email : list[0].email,
                     profilePic : list[0].imgPath,
+                    intro : list[0].intro,
+                    posts : list[0].post_cnt,
+                    followers : list[0].follower,
+                    following : list[0].following,  
                     status : "A" // hard coding status
                     // 권한 등 필요한 정보 추가 
                 };
@@ -129,6 +139,20 @@ router.post("/email", async (req, res) =>{
          }
         res.json({
             result : result
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
+})
+
+router.put("/", async (req, res) =>{
+    let {userName, intro, userId} = req.body;
+    try {
+        let sql = "UPDATE TBL_USER SET USERNAME = ?, INTRO = ? WHERE USERID = ?";
+        let result = await db.query(sql, [userName, intro, userId]);
+        res.json({
+            result : "success"
         });
     } catch (error) {
         console.log(error);
