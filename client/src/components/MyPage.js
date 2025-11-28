@@ -11,6 +11,7 @@ import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import Feed from './Feed';
 
 function MyPage() {
   const [userInfo, setUserInfo] = useState(null);
@@ -209,7 +210,8 @@ function MyPage() {
                     </div>
                 }
                 
-            </div>
+      </div>
+      <Feed variant="profileFeed"></Feed>
     </>
   );
 }

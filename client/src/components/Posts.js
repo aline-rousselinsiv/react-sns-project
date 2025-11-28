@@ -8,6 +8,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
@@ -18,26 +20,31 @@ import { useNavigate } from 'react-router-dom';
 import { cloneElement } from "react";
 
 import Comments from './Comments';
+import PostInput from './PostInput';
 
 function Posts ({children}) {
 
     const token = localStorage.getItem("token");
+    const decoded = token ? jwtDecode(token) : null;
     
     let navigate = useNavigate();
     let [posts, setPosts] = useState([]);
-
     function handleGetFeed(){
         // let userId = 'test1';
     
         if(token){
           const decoded = jwtDecode(token);
           console.log("user ID ==> ", decoded.userId);
-          fetch("http://localhost:3010/feed/")
+          fetch("http://localhost:3010/feed/"+decoded.userId)
                 .then( res => res.json() )
                 .then(data => {
                     if(data.result == "success"){
                         console.log("Data == >", data);
-                        setPosts(data.list);
+                        setPosts(data.list.map(post => ({
+                            ...post,
+                            isLiked: post.isLikedByUser === 1,     // from backend
+                            likeCount: post.likeCount, // from backend
+                        })));
                     }
                 })
          } else {
@@ -103,90 +110,92 @@ function Posts ({children}) {
         }
     }
 
+    // let [isLiked, setIsLiked] = useState();
+    // let [likeCount, setLikeCount] = useState();
+    
+    const toggleLike = (postId) => {
+        const decoded = jwtDecode(token);
+        let userId = decoded.userId;
+
+        fetch("http://localhost:3010/feed/likes/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postId, userId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            
+            setPosts(prev =>
+                prev.map(post => 
+                    post.id === postId
+                    ? {
+                        ...post,
+                        isLiked: data.liked,
+                        likeCount: data.liked
+                            ? post.likeCount + 1
+                            : post.likeCount - 1
+                    }
+                    : post
+                )
+            );
+        })
+        .catch(err => console.error(err));
+    };
+
+    const [editingPostId, setEditingPostId] = useState(null);
+
+
     return <>
 
-        {posts.length > 0 ? posts.map((post, index) => (
-            
-            <div className="postContainer">
-                <div className="postElements" key={index}>
-                    {console.log("Post image path:", post.images)}
-                    {cloneElement(children, { post })}
-                    <div className="titleSection">
-                        <div ><Pen size={35} /></div>
-                        <div className="title">{post.TITLE}</div>
-                        <div className="tags">romantic</div>
-                        <div className="tags">french</div>
-                    </div>
-                    <div className="locationSection">
-                        <div ><Soup size={15} /></div>
-                        <div className="restaurantName">{post.RESTAURANT}</div>
-                        <div ><MapPin size={15} /></div>
-                        <div className="restaurantAddr">{post.ADDRESS}</div>
-                        <div ><HandCoins size={15} /></div>
-                        <div className="restaurantPrice">Budget</div>
-                    </div>
-                    <div className="content">
-                        {post.CONTENT}
-                    </div>
-                    <div style={{marginTop : "50px", marginBottom : "50px"}}>
-                        <Slider className="custom-slider" dots={true} infinite={true} speed={500} slidesToShow={3} slidesToScroll={3}>
-                            {/* <img src={post.imgPath} alt={post.imgName} /> */}
-                            {post.images?.map(img => (
-                                <img key={img.imgId} src={img.imgPath} alt={img.imgName} />
-                            ))}
-                        </Slider>
-                    </div>
-                    <div className='bottom-section'>
-                        <div className='like-btn'><Heart /></div>
-                        <div className='comment-btn'>
-                            <React.Fragment>
-                                <MessageSquareText  onClick={() => handleClickOpen(post.id)} />
-                                    {console.log("Post ID passed to Comments:", post.POST_ID)}
-                                 {/* <IconButton color="primary">
-                                    <CommentIcon />
-                                </IconButton> */}
-                                <Dialog
-                                    open={open}
-                                    onClose={handleClose}
-                                    aria-labelledby="alert-dialog-title"
-                                    aria-describedby="alert-dialog-description"
-                                    BackdropProps={{
-                                    sx: {
-                                        background : "rgba(0,0,0,0)"
-                                        },
-                                    }}
-                                    PaperProps={{
-                                        sx: {
-                                            boxShadow : '0 4px 20px rgba(0, 0, 0, 0.1)',
-                                            minWidth: "1000px",
-                                            minHeight: "250px",
-                                            border: "2px solid rgba(190, 190, 190, 1)",  // blue border
-                                            borderRadius: "16px",          // rounded corners
-                                            padding: 2,
-                                        },
-                                    }}
-                                >
-                                    <DialogContent>
-                                        <DialogContentText id="alert-dialog-description">
-                                            <Comments 
-                                                postId={selectedPostId} 
-                                                onSubmitComment={handlePostComment}
-                                            />
-                                        </DialogContentText>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
-                                        <Button onClick={handleClose}>Close</Button>
-                                    </DialogActions>
-                                </Dialog>
-                            </React.Fragment>
+        {posts.length > 0 ?
+    posts
+    .filter(post => children.props.variant !== "myFeed" || post.USERID === decoded.userId)
+    .map((post, index) => (
+        <div className="postContainer" key={index}>
+            <div className="postElements">
+                {editingPostId === post.id ? (
+                    // If this post is being edited, ONLY show PostInput
+                    <PostInput post={post} refreshPosts={handleGetFeed} />
+                ) : (
+                    // Otherwise, show the normal post
+                    <>
+                        {cloneElement(children, { 
+                            post, 
+                            refreshPosts: handleGetFeed, 
+                            onWillEdit: (postId, value) => setEditingPostId(value ? postId : null) 
+                        })}
+                        
+                        <div className="titleSection">
+                            <div ><Pen size={35} /></div>
+                            <div className="title">{post.TITLE}</div>
+                            <div className="tags">romantic</div>
+                            <div className="tags">french</div>
                         </div>
-                        <div className='save-btn'><BookMarked /></div>
-                    </div>
-                    
-                </div>
+                        <div className="locationSection">
+                            <div ><Soup size={15} /></div>
+                            <div className="restaurantName">{post.RESTAURANT}</div>
+                            <div ><MapPin size={15} /></div>
+                            <div className="restaurantAddr">{post.ADDRESS}</div>
+                            <div ><HandCoins size={15} /></div>
+                            <div className="restaurantPrice">Budget</div>
+                        </div>
+                        <div className="content">{post.content}</div>
+                        <div style={{marginTop : "50px", marginBottom : "50px"}}>
+                            <Slider className="custom-slider" dots={true} infinite={true} speed={500} slidesToShow={3} slidesToScroll={3}>
+                                {post.images?.map(img => (
+                                    <img key={img.imgId} src={img.imgPath} alt={img.imgName} />
+                                ))}
+                            </Slider>
+                        </div>
+                        <div className='bottom-section'>
+                            {/* Like / Comment / Save buttons */}
+                        </div>
+                    </>
+                )}
             </div>
-        )) : "등록된 피드가 없습니다. 피드를 등록해보세요!"}
+        </div>
+    ))
+: "등록된 피드가 없습니다. 피드를 등록해보세요!"}
         
             
     </>

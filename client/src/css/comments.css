@@ -57,3 +57,9 @@
     display: flex;
     flex-direction: row;
 }
+
+.my-profile-btn {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+}

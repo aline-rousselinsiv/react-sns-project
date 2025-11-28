@@ -56,15 +56,18 @@ router.post('/upload', upload.array('file'), async (req, res) => {
 
 // })
 
-router.get("/", async (req, res) => {
+router.get("/:userId", async (req, res) => {
+    let {userId} = req.params;
     try {
         // 1️⃣ Get all posts with user info
         let [feeds] = await db.query(`
-            SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG
+            SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG,
+            (SELECT COUNT(*) FROM TBL_LIKES WHERE postId = F.id) AS likeCount,
+            (SELECT COUNT(*) FROM TBL_LIKES L WHERE L.postId = F.id AND L.userId = ?) AS isLikedByUser
             FROM TBL_FEED F
             INNER JOIN TBL_USER U ON F.USERID = U.USERID
             ORDER BY F.cDatetime DESC
-        `);
+        `,[userId]);
 
         // 2️⃣ Get all images for these posts
         const feedIds = feeds.map(f => f.id); // extract all post IDs
@@ -104,11 +107,11 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.delete("/:feedId", authMiddleware, async (req, res) =>{
-    let {feedId} = req.params;
+router.delete("/:postId", authMiddleware, async (req, res) =>{
+    let {postId} = req.params;
     try {
         let sql = "DELETE FROM TBL_FEED WHERE ID = ?";
-        let result = await db.query(sql, [feedId]);
+        let result = await db.query(sql, [postId]);
         res.json({
             result : "success"
         });
@@ -117,6 +120,33 @@ router.delete("/:feedId", authMiddleware, async (req, res) =>{
     }
 
 })
+
+router.post("/likes", async (req, res) => {
+    const { postId, userId } = req.body;
+    console.log("What is the body ==>", req.body);
+    try {
+        // Check if already liked
+        const checkSql = "SELECT * FROM TBL_LIKES WHERE postId = ? AND userId = ?";
+        const [rows] = await db.query(checkSql, [postId, userId]);
+
+        if (rows.length > 0) {
+            // Already liked → UNLIKE (DELETE)
+            const deleteSql = "DELETE FROM TBL_LIKES WHERE postId = ? AND userId = ?";
+            await db.query(deleteSql, [postId, userId]);
+
+            return res.json({ liked: false }); // now unliked
+        } else {
+            // Not liked → LIKE (INSERT)
+            const insertSql = "INSERT INTO TBL_LIKES (postId, userId) VALUES (?, ?)";
+            await db.query(insertSql, [postId, userId]);
+
+            return res.json({ liked: true }); // now liked
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+});
 
 router.post('/:userId', async (req, res) => {
     let {userId} = req.params;
@@ -134,5 +164,9 @@ router.post('/:userId', async (req, res) => {
         console.log(error);
     }
 })
+
+// likes
+
+
 
 module.exports = router;

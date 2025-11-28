@@ -11,6 +11,25 @@ function UserProfileBox({variant}){
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
     let decoded = jwtDecode(token);
+    let [userInfo, setUserInfo] = useState();
+
+    function handleUserInfo(){
+            if(token){
+                fetch("http://localhost:3010/user/" + decoded.userId)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.result == "success"){
+                        setUserInfo(data.info);
+                    }
+                })
+                } else {
+                alert("로그인 후 이용해주세요.");
+                navigate("/login");
+                }
+        }
+        useEffect(()=>{
+            handleUserInfo();
+        }, [userInfo])
 
     return <>
         <Box 
@@ -23,16 +42,16 @@ function UserProfileBox({variant}){
                 marginBottom : '20px'
             }}>
             <Avatar 
-                src={decoded?.profilePic}
+                src={userInfo?.imgPath}
                 sx={{ width: 70, height: 70, mb: 1 }}
             />
 
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                {decoded.userName}
+                {userInfo?.userName}
             </Typography>
 
             <Typography variant="body2" sx={{ color: 'grey' }}>
-                @{decoded.userId}
+                @{userInfo?.userId}
             </Typography>
         </Box>
   

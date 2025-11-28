@@ -7,14 +7,19 @@ import { useEffect, useRef, useState } from "react";
 import PostInput from './PostInput';
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 
-function UserProfilePost({ variant, post, comment, onSubmitComment }){
+function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit }){
     const [writePost, setWritePost] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
     const navigate = useNavigate();
     let [userInfo, setUserInfo] = useState();
     let commentRef = useRef();
+    const [localComments, setLocalComments] = useState("");
+    let [willEdit, setWillEdit] = useState(false);
 
     function handleUserInfo(){
         if(token){
@@ -32,20 +37,54 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
     }
     useEffect(()=>{
         handleUserInfo();
-    }, [userInfo])
+    }, [])
 
     function handleKeyPress(e) {
     if (e.key === "Enter") {
             const content = commentRef.current.value.trim();
             if (!content) return;
-            onSubmitComment?.({ content }); // send content + postId
+
+            //  setLocalComments(prev => [...prev, {
+            //     userName: userInfo?.userName,
+            //     CONTENT: content
+            // }]);
+            onSubmitComment?.({ content,  postId: post?.id }); // send content + postId
+            setLocalComments(content);
             console.log(content);
             commentRef.current.value = "";
         }
     }
 
+    if (variant === "myFeed" && post?.USERID !== decoded.userId) {
+        return null; // skip rendering if not the user's post
+    }
+
+    function handleDeletePost (postId){
+        console.log("This is the post ID I am about to delete ==>", postId);
+        if(!window.confirm("Are you sure you want to delete this post?")){
+            return;
+        }
+         fetch("http://localhost:3010/feed/"+postId, {
+                method : "DELETE",
+                headers : {
+                    "Authorization" : "Bearer " + localStorage.getItem("token")
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.result === "success"){
+                        alert("Your post has been deleted successfully !");
+                        refreshPosts();
+                    }
+                })
+    }
+
+
+    
+
     return <>
-        <Box
+        <>
+            <Box
             sx={{
                 p: 2,
                 display: 'flex',           // main row: avatar + info
@@ -57,7 +96,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
             {/* Avatar on the left */}
             
 
-            {variant == "write-comment" ? 
+            {variant == "write-comment"? 
                 <>
                 <Avatar
                     src={variant == "post" ? post?.USER_IMG : userInfo?.imgPath}
@@ -78,7 +117,6 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
                     src={variant == "post" ? post?.USER_IMG : userInfo?.imgPath}
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
-                {/* Name and text stacked vertically */}
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                         {variant == "post" ? post?.USERNAME 
@@ -91,10 +129,26 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
                             ? "Tell us about your new finding!"
                             : variant === "post"
                             ? "@" + post?.USERID
-                            : comment?.CONTENT // <-- display actual comment content
+                            : localComments || comment?.CONTENT 
                         }
                     </Typography>
                 </Box> 
+                {variant === "myFeed" && (
+                    <div className="my-profile-btn">
+                        <DialogActions sx={{ justifyContent: "center" }}>
+                            {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
+                            <Button onClick={()=>{
+                                setWillEdit(true);
+                                onWillEdit?.(post.id, true);
+                            }}>EDIT</Button>
+                        </DialogActions>
+                        <DialogActions sx={{ justifyContent: "center" }}>
+                            {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
+                            <Button onClick={() => handleDeletePost(post.id)}>DELETE</Button>
+                        </DialogActions>
+                    </div>
+                )}
+                
                 </>
 
             }
@@ -112,8 +166,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment }){
              )}
         </Box>
         {writePost && <PostInput> </PostInput>}
-        
-  
+        </>
     </>
 }
 

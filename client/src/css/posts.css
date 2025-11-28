@@ -83,3 +83,9 @@
   font-size: 12px;      /* active dot even bigger */
   color: rgb(95, 95, 95);          /* active dot color */
 }
+
+.like-btn {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}

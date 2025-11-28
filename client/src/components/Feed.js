@@ -32,16 +32,23 @@ import Posts from './Posts';
 import UserProfilePost from './UserProfilePost';
 
 
-function Feed() {
-
+function Feed({ variant }) {
   return (
     <>
-      <WritePost variant="write-post">
-        <UserProfilePost variant="writePost"></UserProfilePost>
-      </WritePost>
-      <Posts>
-        <UserProfilePost variant="post"></UserProfilePost>
-      </Posts>
+      {variant !== "profileFeed" ? (
+        <>
+          <WritePost variant="write-post">
+            <UserProfilePost variant="writePost" />
+          </WritePost>
+          <Posts>
+            <UserProfilePost variant="post" />
+          </Posts>
+        </>
+      ) : (
+        <Posts>
+          <UserProfilePost variant="myFeed"/>
+        </Posts>
+      )}
     </>
   );
 }
