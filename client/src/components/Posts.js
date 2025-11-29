@@ -29,30 +29,27 @@ function Posts ({children}) {
     
     let navigate = useNavigate();
     let [posts, setPosts] = useState([]);
-    function handleGetFeed(){
-        // let userId = 'test1';
     
-        if(token){
-          const decoded = jwtDecode(token);
-          console.log("user ID ==> ", decoded.userId);
-          fetch("http://localhost:3010/feed/"+decoded.userId)
-                .then( res => res.json() )
-                .then(data => {
-                    if(data.result == "success"){
-                        console.log("Data == >", data);
-                        setPosts(data.list.map(post => ({
-                            ...post,
-                            isLiked: post.isLikedByUser === 1,     // from backend
-                            likeCount: post.likeCount, // from backend
-                        })));
-                    }
-                })
-         } else {
-          // 로그인 페이지 이동
-          alert("로그인 먼저 하세요.");
-          navigate("/");
-         }
-    }
+    const handleGetFeed = React.useCallback(() => {
+        if (!token) {
+            alert("로그인 먼저 하세요.");
+            navigate("/");
+            return;
+        }
+
+        const decoded = jwtDecode(token);
+        fetch("http://localhost:3010/feed/" + decoded.userId)
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === "success") {
+                    setPosts(data.list.map(post => ({
+                        ...post,
+                        isLiked: post.isLikedByUser === 1,
+                        likeCount: post.likeCount,
+                    })));
+                }
+            });
+    }, [token, navigate]);
         
     useEffect(()=>{
         // console.log("서버에서 요청해서 제품 목록을 가져오는 부분");
@@ -155,7 +152,7 @@ function Posts ({children}) {
                 <div className="postElements">
                     {editingPostId === post.id ? (
                         // If this post is being edited, ONLY show PostInput
-                        <PostInput post={post} refreshPosts={handleGetFeed} variant="editMyPost" />
+                        <PostInput post={post} refreshPosts={handleGetFeed} variant="editMyPost" onCancel={() => setEditingPostId(null)} />
                     ) : (
                         // Otherwise, show the normal post
                         <>

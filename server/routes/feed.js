@@ -35,27 +35,6 @@ router.post('/upload', upload.array('file'), async (req, res) => {
     }
 });
 
-// router.get("/", async (req, res) =>{
-//     // console.log(`${req.protocol}://${req.get("host")}`);
-    
-//     try {
-//         let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH, I.* " 
-//                     +"FROM tbl_FEED F "
-//                     +"INNER JOIN TBL_USER U ON F.USERID = U.USERID "
-//                     +"INNER JOIN TBL_FEED_IMG I ON F.ID = I.FEEDID "
-//                     +"ORDER BY F.cDatetime DESC";
-//         let [list] = await db.query(sql);
-//         // console.log(list);
-//         res.json({
-//             result : "success",
-//             list : list
-//         });
-//     } catch (error) {
-//         console.log(error);
-//     }
-
-// })
-
 router.get("/:userId", async (req, res) => {
     let {userId} = req.params;
     try {
@@ -88,7 +67,7 @@ router.get("/:userId", async (req, res) => {
                 images: images
                     .filter(img => img.feedId === feed.id)
                     .map(img => ({
-                        imgId: img.ID,
+                        imgId: img.imgNo,
                         imgPath: img.imgPath,
                         imgName: img.imgName
                     }))
@@ -107,7 +86,7 @@ router.get("/:userId", async (req, res) => {
     }
 });
 
-router.delete("/:postId", authMiddleware, async (req, res) =>{
+router.delete("/:postId", async (req, res) =>{
     let {postId} = req.params;
     try {
         let sql = "DELETE FROM TBL_FEED WHERE ID = ?";
@@ -120,6 +99,18 @@ router.delete("/:postId", authMiddleware, async (req, res) =>{
     }
 
 })
+
+router.delete('/image/:imgId', async (req, res) => {
+    const { imgId } = req.params;
+    console.log("img no == >", imgId);
+    try {
+        await db.query("DELETE FROM TBL_FEED_IMG WHERE IMGNO = ?", [imgId]);
+        res.json({ result: "success" });
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({ result: "error" });
+    }
+});
 
 router.post("/likes", async (req, res) => {
     const { postId, userId } = req.body;
@@ -165,7 +156,50 @@ router.post('/:userId', async (req, res) => {
     }
 })
 
-// likes
+// router.put("/:userId", async (req, res) =>{
+//     let {userId} = req.params;
+//     let {postId, content, title, address, restaurant} = req.body;
+//     try {
+//         let sql = "UPDATE TBL_FEED SET CONTENT = ?, TITLE = ?, ADDRESS = ?, RESTAURANT = ? WHERE USERID = ? AND ID = ?";
+//         let result = await db.query(sql, [content, title, address, restaurant, userId, postId]);
+//         res.json({
+//             result : "success"
+//         });
+//     } catch (error) {
+//         console.log(error);
+//     }
+
+// })
+
+router.put("/:userId", async (req, res) =>{
+    let {userId} = req.params;
+    let {postId, content, title, address, restaurant, deletedImages} = req.body;
+    console.log("Making sure the deleted images are an actual array? ==>", deletedImages);
+
+    try {
+        // 1️⃣ Update the post content
+        await db.query(
+            "UPDATE TBL_FEED SET CONTENT = ?, TITLE = ?, ADDRESS = ?, RESTAURANT = ? WHERE USERID = ? AND ID = ?",
+            [content, title, address, restaurant, userId, postId]
+        );
+
+        // 2️⃣ Delete removed images if any
+        if (deletedImages && deletedImages.length > 0) {
+            const [rows] = await db.query(`SELECT IMGNAME FROM TBL_FEED_IMG WHERE IMGNO IN (?)`, [deletedImages]);
+            const fs = require("fs");
+            for (let row of rows) {
+                const path = "uploads/" + row.IMGNAME;
+                if (fs.existsSync(path)) fs.unlinkSync(path);
+            }
+            await db.query("DELETE FROM TBL_FEED_IMG WHERE IMGNO IN (?)", [deletedImages]); 
+        }
+
+        res.json({ result: "success" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ result: "error" });
+    }
+});
 
 
 

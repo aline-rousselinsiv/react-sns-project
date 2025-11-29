@@ -12,8 +12,7 @@ import { useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
-function PostInput({variant, post}){
-    console.log("is he post data well passed? ==>", post);
+function PostInput({variant, post, onCancel, refreshPosts}){
     let navigate = useNavigate();
     const [tags, setTags] = useState([]);
     const [input, setInput] = useState("");
@@ -32,16 +31,24 @@ function PostInput({variant, post}){
         setTags(tags.filter((t) => t !== tagToRemove));
     };
 
-    const [files, setFile] = React.useState([]);
+    // const [files, setFile] = useState(
+    //     post?.images?.map(img => ({
+    //         imgId: img.imgId,      // only for existing images
+    //         name: img.imgName,     // name from DB
+    //         preview: img.imgPath   // URL to show in Avatar
+    //     })) || []
+    // );
+
+    const [files, setFile] = useState([]);
+
     const handleFileChange = (event) => {
-        setFile(Array.from(event.target.files));
+        const newFiles = Array.from(event.target.files).map(f => ({
+            name: f.name,
+            preview: URL.createObjectURL(f),
+            file: f
+        }));
+        setFile([...files, ...newFiles]);
     };
-    
-    // Post review function
-    // let titleRef = useRef(null);
-    // let restaurantRef = useRef(null);
-    // let addressRef = useRef(null);
-    // let contentRef = useRef(null);
 
     function handlePost(){
         const token = localStorage.getItem("token");
@@ -98,25 +105,43 @@ function PostInput({variant, post}){
 
     // file  upload function
 
-    const fnUploadFile = (feedId)=>{
-    const formData = new FormData();
-        for(let i=0; i<files.length; i++){
-            formData.append("file", files[i]); 
-        } 
+    // const fnUploadFile = (feedId)=>{
+    // const formData = new FormData();
+    //     for(let i=0; i<files.length; i++){
+    //         formData.append("file", files[i]); 
+    //     } 
+    //     formData.append("feedId", feedId);
+    //     fetch("http://localhost:3010/feed/upload", {
+    //         method: "POST",
+    //         body: formData
+    //     })
+    //     .then(res => res.json())
+    //     .then(data => {
+    //         console.log(data);
+    //         // navigate("/feed"); // 원하는 경로
+    //     })
+    //     .catch(err => {
+    //         console.error(err);
+    //     });
+    // }
+
+    const fnUploadFile = (feedId) => {
+        const formData = new FormData();
+        files.forEach(f => {
+            if (f.file) {  // only upload new files
+                formData.append("file", f.file);
+            }
+        });
         formData.append("feedId", feedId);
+
         fetch("http://localhost:3010/feed/upload", {
             method: "POST",
             body: formData
         })
         .then(res => res.json())
-        .then(data => {
-            console.log(data);
-            // navigate("/feed"); // 원하는 경로
-        })
-        .catch(err => {
-            console.error(err);
-        });
-    }
+        .then(data => console.log(data))
+        .catch(err => console.error(err));
+    };
 
     // initializing formData to allow user to edit existing data
 
@@ -128,15 +153,112 @@ function PostInput({variant, post}){
     });
 
     useEffect(() => {
-    if (variant === "editMyPost" && post) {
-        setFormData({
-        title: post.TITLE || "",
-        restaurant: post.RESTAURANT || "",
-        address: post.ADDRESS || "",
-        content: post.content || ""
+        if (variant === "editMyPost" && post) {
+            setFormData({
+                title: post.TITLE || "",
+                restaurant: post.RESTAURANT || "",
+                address: post.ADDRESS || "",
+                content: post.content || ""
+            });
+
+            // NEW: load existing images
+            const existingFiles = (post.images || []).map(img => {
+                const id = img.ID ?? img.IMGNO ?? img.imgId ?? img.imgId ?? null;
+                return {
+                    imgId: id,               // normalized id for comparisons
+                    name: img.imgName ?? img.IMGNAME ?? img.imgName ?? "",
+                    preview: img.imgPath ?? img.imgPath ?? ""
+                };
+            }).filter(f => f.imgId !== null); // only keep ones with an id
+
+            setFile(existingFiles);
+
+            console.log("🔥 EDIT MODE POST =", post);
+            console.log("🔥 IMAGES FROM SERVER =", post?.images);
+        }
+    }, [variant, post]);
+
+    // cancel button function 
+
+    const handleCancel = () => {
+        if (post) {
+            setFormData({
+            title: post.TITLE || "",
+            restaurant: post.RESTAURANT || "",
+            address: post.ADDRESS || "",
+            content: post.content || ""
+            });
+                // setTags([]); // optional, if you want to reset tags too
+                // setFiles([]); // optional, reset selected images
+        }
+        };
+
+    // edit post function
+
+    function handleEditPost() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Please log in first.");
+            return;
+        }
+
+        const decoded = jwtDecode(token);
+        const { title, restaurant, address, content } = formData;
+
+        if (title === "") { alert("Enter a title!"); return; }
+        if (restaurant === "") { alert("Enter the restaurant name!"); return; }
+        if (address === "") { alert("Enter the restaurant's address!"); return; }
+        if (content === "") { alert("Enter a description!"); return; }
+
+        // Determine which existing images were removed
+        // Determine which existing images were removed (using normalized ids)
+            const existingImages = files.filter(f => f.imgId !== undefined && f.imgId !== null);
+
+            // build an array of ids that are currently on the server (normalize keys)
+            const serverImageIds = (post.images || []).map(img => img.ID ?? img.IMGNO ?? img.imgId ?? null)
+                .filter(id => id !== null);
+
+            // now compute removed IDs: those that were on the server but are NOT in existingImages
+            const removedImages = serverImageIds.filter(serverId =>
+                !existingImages.some(f => f.imgId === serverId)
+            );
+
+        const param = { title, restaurant, address, content, postId: post.id, deletedImages: removedImages };
+
+        // 1️⃣ Update post content AND delete removed images
+        fetch(`http://localhost:3010/feed/${decoded.userId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(param)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.result !== "success") throw new Error("Error updating post");
+
+            // 2️⃣ Upload new images (files with `file` property)
+            const newFiles = files.filter(f => f.file);
+            if (newFiles.length > 0) {
+                const formDataObj = new FormData();
+                newFiles.forEach(f => formDataObj.append("file", f.file));
+                formDataObj.append("feedId", post.id);
+
+                return fetch("http://localhost:3010/feed/upload", { method: "POST", body: formDataObj })
+                    .then(res => res.json());
+            }
+        })
+        .then(() => {
+            // 3️⃣ Finish
+            alert("Post updated successfully!");
+            refreshPosts();       // refresh parent component
+            if (onCancel) onCancel(); // exit edit mode
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error updating post!");
         });
     }
-    }, [variant, post]);
+
+
 
     return <>
             <div style={{textAlign : "center"}}>
@@ -268,13 +390,63 @@ function PostInput({variant, post}){
                 </label>
                 
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
-                    {files.length > 0 && files.map((file) => (
+                    {/* {files.length > 0 && files.map((file, index) => (
+                        <Box key={file.name} sx={{ position: 'relative', display: 'inline-block' }}>
                         <Avatar
-                        key={file.name}
-                        alt="첨부된 이미지"
-                        src={URL.createObjectURL(file)}
-                        sx={{ width: 56, height: 56, marginLeft: 2, justifyContent : "center" }}
+                            alt={file.name}
+                            src={file.preview}
+                            sx={{ width: 56, height: 56 }}
                         />
+                        <IconButton
+                            size="small"
+                            sx={{
+                                position: 'absolute',
+                                top: -6,
+                                right: -6,
+                                backgroundColor: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 20,
+                                height: 20,
+                                padding: 0,
+                                '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' },
+                            }}
+                            onClick={() => {
+                            setFiles(files.filter((_, i) => i !== index));
+                            }}
+                        >
+                            ×
+                        </IconButton>
+                        </Box>
+                    ))} */}
+                    {files.map((fileObj, index) => (
+                        <Box key={index} sx={{ position: 'relative', display: 'inline-block' }}>
+                            <Avatar
+                            alt="첨부된 이미지"
+                            src={fileObj.preview} // <- use preview
+                            sx={{ width: 56, height: 56 }}
+                            />
+                            <IconButton
+                            size="small"
+                            sx={{
+                                position: 'absolute',
+                                top: -6,
+                                right: -6,
+                                backgroundColor: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 20,
+                                height: 20,
+                                padding: 0,
+                                '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' },
+                            }}
+                            onClick={() => {
+                                setFile(files.filter((_, i) => i !== index));
+                            }}
+                            >
+                            ×
+                            </IconButton>
+                        </Box>
                     ))}
                 </Box>
 
@@ -282,6 +454,7 @@ function PostInput({variant, post}){
                     {variant === "editMyPost" ? 
                     <>
                         <Button
+                        onClick={handleEditPost}
                             variant="contained"
                             sx={{
                                 backgroundColor: 'rgba(169, 211, 195, 1)',
@@ -291,6 +464,12 @@ function PostInput({variant, post}){
                             EDIT
                         </Button>
                         <Button
+                            onClick={()=>{
+                                if(!window.confirm("Your modifications won't be saved.")){
+                                    return;
+                                }
+                                onCancel();
+                            }}
                             variant="contained"
                             sx={{
                                 backgroundColor: 'rgba(169, 211, 195, 1)',

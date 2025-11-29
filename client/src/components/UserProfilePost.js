@@ -63,10 +63,10 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
             return;
         }
          fetch("http://localhost:3010/feed/"+postId, {
-                method : "DELETE",
-                headers : {
-                    "Authorization" : "Bearer " + localStorage.getItem("token")
-                }
+                method : "DELETE"
+                // headers : {
+                //     "Authorization" : "Bearer " + localStorage.getItem("token")
+                // }
             })
                 .then(res => res.json())
                 .then(data => {
@@ -140,10 +140,12 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                                 onWillEdit?.(post.id, true);
                             }}>EDIT</Button>
                         </DialogActions>
-                        <DialogActions sx={{ justifyContent: "center" }}>
-                            {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
-                            <Button onClick={() => handleDeletePost(post.id)}>DELETE</Button>
-                        </DialogActions>
+                        {!willEdit && (
+                            <DialogActions sx={{ justifyContent: "center" }}>
+                                {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
+                                <Button onClick={() => handleDeletePost(post.id)}>DELETE</Button>
+                            </DialogActions>  
+                        )}  
                     </div>
                 )}
                 
