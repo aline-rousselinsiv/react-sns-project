@@ -63,3 +63,9 @@
     flex-direction: row;
     margin-left: auto;
 }
+
+.comment-btn {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}

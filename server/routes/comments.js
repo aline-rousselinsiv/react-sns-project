@@ -20,6 +20,20 @@ router.get("/:postId", async (req, res) =>{
 
 })
 
+router.get("/count/:postId", async (req, res) => {
+    let { postId } = req.params;
+    try {
+        let sql = "SELECT COUNT(*) AS count FROM TBL_COMMENTS WHERE POST_ID = ?";
+        let [result] = await db.query(sql, [postId]);
+        res.json({ 
+            result: "success", 
+            count: result[0].count });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error", message: error.message });
+    }
+});
+
 router.post("/:userId", async (req, res) => {
     let { userId } = req.params;
     let { postId, content } = req.body;

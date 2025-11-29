@@ -172,9 +172,6 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             }).filter(f => f.imgId !== null); // only keep ones with an id
 
             setFile(existingFiles);
-
-            console.log("🔥 EDIT MODE POST =", post);
-            console.log("🔥 IMAGES FROM SERVER =", post?.images);
         }
     }, [variant, post]);
 
@@ -257,9 +254,6 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             alert("Error updating post!");
         });
     }
-
-
-
     return <>
             <div style={{textAlign : "center"}}>
             <Box

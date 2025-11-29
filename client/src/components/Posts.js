@@ -29,8 +29,49 @@ function Posts ({children}) {
     
     let navigate = useNavigate();
     let [posts, setPosts] = useState([]);
-    
-    const handleGetFeed = React.useCallback(() => {
+
+    // My version
+
+    // const handleGetFeed = React.useCallback(() => {
+    //     if (!token) {
+    //         alert("로그인 먼저 하세요.");
+    //         navigate("/");
+    //         return;
+    //     }
+
+    //     const decoded = jwtDecode(token);
+    //     fetch("http://localhost:3010/feed/" + decoded.userId)
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             if (data.result === "success") {
+    //                 setPosts(data.list.map(post => ({
+    //                     ...post,
+    //                     isLiked: post.isLikedByUser === 1,
+    //                     likeCount: post.likeCount,
+    //                 })));
+    //             }
+    //         });
+    // }, [token, navigate]);
+        
+    // useEffect(()=>{
+    //     // console.log("서버에서 요청해서 제품 목록을 가져오는 부분");
+    //     handleGetFeed();
+    // }, [])
+
+    // chatGPT's version
+
+    const fetchCommentCount = async (postId) => {
+        try {
+            const res = await fetch(`http://localhost:3010/comments/count/${postId}`);
+            const data = await res.json();
+            return data.result === "success" ? data.count : 0;
+        } catch (err) {
+            console.error("Error fetching comment count:", err);
+            return 0;
+        }
+    };
+
+    const handleGetFeed = React.useCallback(async () => {
         if (!token) {
             alert("로그인 먼저 하세요.");
             navigate("/");
@@ -38,23 +79,36 @@ function Posts ({children}) {
         }
 
         const decoded = jwtDecode(token);
-        fetch("http://localhost:3010/feed/" + decoded.userId)
-            .then(res => res.json())
-            .then(data => {
-                if (data.result === "success") {
-                    setPosts(data.list.map(post => ({
-                        ...post,
-                        isLiked: post.isLikedByUser === 1,
-                        likeCount: post.likeCount,
-                    })));
-                }
-            });
+
+        try {
+            const res = await fetch("http://localhost:3010/feed/" + decoded.userId);
+            const data = await res.json();
+
+            if (data.result === "success") {
+                // For each post, get the comment count
+                const postsWithComments = await Promise.all(
+                    data.list.map(async post => {
+                        const commentRes = await fetch(`http://localhost:3010/comments/${post.id}`);
+                        const commentData = await commentRes.json();
+                        return {
+                            ...post,
+                            isLiked: post.isLikedByUser === 1,
+                            likeCount: post.likeCount,
+                            commentCount: commentData.list.length // <-- add comment count here
+                        };
+                    })
+                );
+
+                setPosts(postsWithComments); // update state properly
+            }
+        } catch (err) {
+            console.error("Error fetching feed:", err);
+        }
     }, [token, navigate]);
-        
-    useEffect(()=>{
-        // console.log("서버에서 요청해서 제품 목록을 가져오는 부분");
+
+    useEffect(() => {
         handleGetFeed();
-    }, [])
+    }, [handleGetFeed]);
 
     // Modal for comments
 
@@ -95,6 +149,7 @@ function Posts ({children}) {
             .then(data => {
                 if(data.result == "success"){
                     alert("댓글 추가 성공 !");
+                     handleGetFeed();
                 } else {
                     alert("error");
                 }
@@ -194,7 +249,7 @@ function Posts ({children}) {
                                 <div className='comment-btn'>
                                     <React.Fragment>
                                         <MessageSquareText  onClick={() => handleClickOpen(post.id)} />
-                                            {console.log("Post ID passed to Comments:", post.POST_ID)}
+                                             <div>{post.commentCount}</div>
                                         {/* <IconButton color="primary">
                                             <CommentIcon />
                                         </IconButton> */}
