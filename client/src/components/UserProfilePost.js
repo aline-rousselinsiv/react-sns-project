@@ -1,6 +1,5 @@
 import { Box, Avatar, Typography } from "@mui/material";
 import RestaurantIcon from '@mui/icons-material/Restaurant';
-import profileWomanImg from "../images/profileWomanImg.jpg";
 import "../css/userProfileBox.css";
 import "../css/comments.css";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +7,6 @@ import PostInput from './PostInput';
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 
 function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit }){
