@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
@@ -12,7 +12,8 @@ import { useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
-function PostInput(){
+function PostInput({variant, post}){
+    console.log("is he post data well passed? ==>", post);
     let navigate = useNavigate();
     const [tags, setTags] = useState([]);
     const [input, setInput] = useState("");
@@ -37,27 +38,32 @@ function PostInput(){
     };
     
     // Post review function
-    let titleRef = useRef(null);
-    let restaurantRef = useRef(null);
-    let addressRef = useRef(null);
-    let contentRef = useRef(null);
+    // let titleRef = useRef(null);
+    // let restaurantRef = useRef(null);
+    // let addressRef = useRef(null);
+    // let contentRef = useRef(null);
 
     function handlePost(){
         const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Please log in first.");
+            return;
+        }
         const decoded = jwtDecode(token);
-        if(titleRef.current.value == ""){
+        const { title, restaurant, address, content } = formData;
+        if(title == ""){
             alert("Enter a title!");
             return;
         }
-        if(restaurantRef.current.value == ""){
+        if(restaurant == ""){
             alert("Enter the restaurant name!");
             return;
         }
-        if(addressRef.current.value == ""){
+        if(address== ""){
             alert("Enter the restaurant's address!");
             return;
         }
-        if(contentRef.current.value == ""){
+        if(content == ""){
             alert("Enter a description!");
             return;
         }
@@ -66,10 +72,10 @@ function PostInput(){
             return;
         }
         let param = {
-            title : titleRef.current.value,
-            restaurant : restaurantRef.current.value,
-            address : addressRef.current.value,
-            content : contentRef.current.value
+            title : title,
+            restaurant : restaurant,
+            address : address,
+            content : content
         };
         fetch("http://localhost:3010/feed/"+decoded.userId, {
         method : "POST", 
@@ -89,6 +95,8 @@ function PostInput(){
             }
         })
     }
+
+    // file  upload function
 
     const fnUploadFile = (feedId)=>{
     const formData = new FormData();
@@ -110,17 +118,52 @@ function PostInput(){
         });
     }
 
+    // initializing formData to allow user to edit existing data
+
+    const [formData, setFormData] = useState({
+        title: "",
+        restaurant: "",
+        address: "",
+        content: ""
+    });
+
+    useEffect(() => {
+    if (variant === "editMyPost" && post) {
+        setFormData({
+        title: post.TITLE || "",
+        restaurant: post.RESTAURANT || "",
+        address: post.ADDRESS || "",
+        content: post.content || ""
+        });
+    }
+    }, [variant, post]);
+
     return <>
-        <div style={{textAlign : "center"}}>
+            <div style={{textAlign : "center"}}>
             <Box
                 component="form"
                 sx={{ '& > :not(style)': { m: 1, width: '110ch' }, margin : "0 auto" }}
                 noValidate
                 autoComplete="off" 
                 >
-                <TextField inputRef={titleRef} id="standard-basic" label="Title" variant="standard" />
-                <TextField inputRef={restaurantRef} id="standard-basic" label="Restaurant" variant="standard" />
-                <TextField inputRef={addressRef} id="standard-basic" label="Address" variant="standard" />
+                <TextField
+                    label="Title"
+                    variant="standard"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                <TextField
+                    label="Restaurant"
+                    variant="standard"
+                    value={formData.restaurant}
+                    onChange={(e) => setFormData({ ...formData, restaurant: e.target.value })}
+                    />
+                <TextField
+                    label="Address"
+                    variant="standard"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
                 <div
                     style={{
                         borderBottom : "1px grey solid",
@@ -201,16 +244,11 @@ function PostInput(){
                     }}
                 />
                 <TextField
-                    inputRef={contentRef}
-                    id="outlined-multiline-static"
-                    label="Description"
                     multiline
                     rows={4}
-                    slotProps={{
-                        input: {    
-                        sx : {color : "grey", marginTop : "20px"}
-                        },
-                    }}
+                    label="Description"
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 />
                 
             </Box>
@@ -241,19 +279,43 @@ function PostInput(){
                 </Box>
 
                 <Stack spacing={2} direction="row">
-                    <Button
-                    onClick={handlePost}
-                    variant="contained"
-                    sx={{
-                        backgroundColor: 'rgba(169, 211, 195, 1)',
-                        '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
-                    }}
-                    >
-                    Post
-                    </Button>
+                    {variant === "editMyPost" ? 
+                    <>
+                        <Button
+                            variant="contained"
+                            sx={{
+                                backgroundColor: 'rgba(169, 211, 195, 1)',
+                                '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                            }}
+                            >
+                            EDIT
+                        </Button>
+                        <Button
+                            variant="contained"
+                            sx={{
+                                backgroundColor: 'rgba(169, 211, 195, 1)',
+                                '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                            }}
+                            >
+                            CANCEL
+                        </Button>
+                        </>
+                    :
+                            <Button
+                            onClick={handlePost}
+                            variant="contained"
+                            sx={{
+                                backgroundColor: 'rgba(169, 211, 195, 1)',
+                                '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                            }}
+                            >
+                            POST
+                        </Button>
+                    }
                 </Stack>
             </Box>  
         </div>
+        
     </>
 }
 

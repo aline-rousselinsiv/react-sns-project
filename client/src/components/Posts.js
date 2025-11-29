@@ -155,7 +155,7 @@ function Posts ({children}) {
                 <div className="postElements">
                     {editingPostId === post.id ? (
                         // If this post is being edited, ONLY show PostInput
-                        <PostInput post={post} refreshPosts={handleGetFeed} />
+                        <PostInput post={post} refreshPosts={handleGetFeed} variant="editMyPost" />
                     ) : (
                         // Otherwise, show the normal post
                         <>
