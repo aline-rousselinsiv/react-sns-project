@@ -47,7 +47,7 @@ function Menu() {
         <ListItem button component={NavLink} to="/mypage" sx={navItemStyles}>
           <ListItemText primary="MY PROFILE" />
         </ListItem>
-        <ListItem button component={NavLink} to="" sx={navItemStyles}>
+        <ListItem button component={NavLink} to="/savedposts" sx={navItemStyles}>
           <ListItemText primary="SAVED POSTS" />
         </ListItem>
       </List>

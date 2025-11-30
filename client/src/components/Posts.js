@@ -18,11 +18,14 @@ import { useEffect, useState } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { cloneElement } from "react";
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+
 
 import Comments from './Comments';
 import PostInput from './PostInput';
 
-function Posts ({children}) {
+function Posts ({children, posts: externalPosts, variant}) {
 
     const token = localStorage.getItem("token");
     const decoded = token ? jwtDecode(token) : null;
@@ -94,7 +97,8 @@ function Posts ({children}) {
                             ...post,
                             isLiked: post.isLikedByUser === 1,
                             likeCount: post.likeCount,
-                            commentCount: commentData.list.length // <-- add comment count here
+                            commentCount: commentData.list.length,
+                            isSaved: post.isSavedByUser === 1
                         };
                     })
                 );
@@ -107,8 +111,12 @@ function Posts ({children}) {
     }, [token, navigate]);
 
     useEffect(() => {
-        handleGetFeed();
-    }, [handleGetFeed]);
+        if (externalPosts) {
+            setPosts(externalPosts);   // <-- use posts from parent
+            return;
+        }
+    handleGetFeed(); 
+    }, [externalPosts]);
 
     // Modal for comments
 
@@ -194,14 +202,52 @@ function Posts ({children}) {
         .catch(err => console.error(err));
     };
 
+    // saved posts function 
+
+    const toggleSave = (postId) => {
+        if (!token) {
+            alert("로그인 먼저 하세요.");
+            navigate("/");
+            return;
+        }
+
+        const decoded = jwtDecode(token);
+        const userId = decoded.userId;
+
+        fetch("http://localhost:3010/feed/saved", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json" 
+                },
+            body: JSON.stringify({ postId, userId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Update the state for the saved icon
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId
+                    ? { ...post, isSaved: data.saved } // data.saved = true/false
+                    : post
+                )
+            );
+        })
+        .catch(err => console.error(err));
+    };
+
     const [editingPostId, setEditingPostId] = useState(null);
-
-
     return <>
 
-        {posts.length > 0 ?
-        posts
-        .filter(post => children.props.variant !== "myFeed" || post.USERID === decoded.userId)
+        {(externalPosts || posts).length > 0 ?
+        (externalPosts || posts)
+        .filter(post => {
+            // For savedPosts variant, show all posts (don't filter by user)
+            if (variant === "savedPosts") {
+                return true;
+            }
+            // For other variants, apply the original logic
+            return children.props.variant !== "myFeed" || post.USERID === decoded.userId;
+        })
         .map((post, index) => (
             <div className="postContainer" key={index}>
                 <div className="postElements">
@@ -289,7 +335,12 @@ function Posts ({children}) {
                                         </Dialog>
                                     </React.Fragment>
                                 </div>
-                                <div className='save-btn'><BookMarked /></div>
+                                <div className='save-btn' onClick={() => toggleSave(post.id)}>
+                                    {post.isSaved 
+                                        ? <BookmarkIcon color="black" />  
+                                        : <BookmarkBorderIcon />            
+                                    }
+                                </div>
                             </div>
                         </>
                     )}
