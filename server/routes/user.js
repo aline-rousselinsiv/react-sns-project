@@ -4,6 +4,35 @@ const db = require("../db");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const JWT_KEY = "server_secret_key"; // 해시 함수 실행 위해 사용할 키로 아주 긴 랜덤한 문자를 사용하길 권장하며, 노출되면 안됨.
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads/'),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+});
+const upload = multer({ storage });
+
+router.post('/upload', upload.single('file'), async (req, res) => {
+    let {userId} = req.body;
+    const file = req.file;
+    // const filename = req.file.filename; 
+    // const destination = req.file.destination; 
+    try{
+        const host = `${req.protocol}://${req.get("host")}`;
+        const fileUrl = `${host}/uploads/${file.filename}`; // public URL for frontend
+
+        // Update user's profile picture in DB
+        const query = "UPDATE TBL_USER SET IMGPATH = ? WHERE USERID = ?";
+        await db.query(query, [fileUrl, userId]);
+        res.json({
+            result : "success",
+            newProfilePic: fileUrl
+        });
+    } catch(err){
+        console.log(err);
+        res.status(500).send("Server Error");
+    }
+});
 
 router.post("/join", async (req, res) =>{
     let {userId, pwd, userName, email} = req.body;

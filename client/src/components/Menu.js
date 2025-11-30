@@ -26,7 +26,7 @@ function Menu() {
         '& .MuiDrawer-paper': {
           width: 240, // Drawer 내부의 너비 설정
           boxSizing: 'border-box',
-          top: '180px',
+          // top: '180px',
           position: 'sticky', // <--- make it sticky
           height: 'calc(100vh - 180px)' // keep it within viewport
         },

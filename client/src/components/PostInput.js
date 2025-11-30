@@ -42,12 +42,15 @@ function PostInput({variant, post, onCancel, refreshPosts}){
     const [files, setFile] = useState([]);
 
     const handleFileChange = (event) => {
+        console.log("Files selected:", event.target.files.length);
         const newFiles = Array.from(event.target.files).map(f => ({
             name: f.name,
             preview: URL.createObjectURL(f),
             file: f
         }));
+        console.log("New files array:", newFiles);
         setFile([...files, ...newFiles]);
+        console.log("Total files after:", [...files, ...newFiles].length);
     };
 
     function handlePost(){
@@ -372,12 +375,12 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                 <input
                     accept="image/*"
                     style={{ display: 'none' }}
-                    id="file-upload"
+                    id="post-image-upload"
                     type="file"
                     onChange={handleFileChange}
                     multiple
                 />
-                <label htmlFor="file-upload">
+                <label htmlFor="post-image-upload">
                     <IconButton component="span">
                         <AddAPhotoIcon sx={{ color: 'black', justifyContent:"center" }} />
                     </IconButton>
