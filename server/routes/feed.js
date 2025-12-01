@@ -51,9 +51,12 @@ router.get("/:userId", async (req, res) => {
                   "FROM TBL_FEED F " +
                   "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
                   "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
-                  "WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.CONTENT LIKE ?) " +
+                  "LEFT JOIN TBL_POST_CATEGORY PC ON F.ID = PC.POST_ID " +
+                  "LEFT JOIN TBL_CATEGORY C ON PC.CATEGORY_ID = C.CATEGORY_ID " +
+                  "WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.RATING LIKE ? OR C.CATEGORY_NAME LIKE ? OR CONTENT LIKE ?) " +
+                  "GROUP BY F.ID " +  // ✅ Add GROUP BY to avoid duplicates from JOIN
                   "ORDER BY F.CDATETIME DESC";
-            params = [userId, userId, searchTerm, searchTerm, searchTerm, searchTerm];
+            params = [userId, userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm];
         } else {
             // All posts query
             sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
@@ -129,8 +132,6 @@ router.get("/:userId", async (req, res) => {
 
 // get saved posts
 
-// Add near your other routes in feed router file (e.g. routes/feed.js)
-
 router.get("/saved/:userId", async (req, res) => {
     const { userId } = req.params;
     const keyword = req.query.keyword || '';  // ✅ Add this
@@ -144,14 +145,17 @@ router.get("/saved/:userId", async (req, res) => {
             sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
                   "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
                   "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
-                  "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+                  "MAX(CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END) AS isSavedByUser " +  // ✅ Added MAX()
                   "FROM TBL_FEED F " +
                   "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
                   "INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? " + 
                   "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
-                  "WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.CONTENT LIKE ?) " +  // ✅ Add WHERE clause
+                  "LEFT JOIN TBL_POST_CATEGORY PC ON F.ID = PC.POST_ID " +
+                  "LEFT JOIN TBL_CATEGORY C ON PC.CATEGORY_ID = C.CATEGORY_ID " +
+                  "WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.RATING LIKE ? OR C.CATEGORY_NAME LIKE ? OR F.CONTENT LIKE ?) " +  // ✅ Added F.CONTENT LIKE ?
+                  "GROUP BY F.ID, U.USERID, U.USERNAME, U.IMGPATH " +  // ✅ Added user columns to GROUP BY
                   "ORDER BY F.CDATETIME DESC";
-            params = [userId, userId, userId, searchTerm, searchTerm, searchTerm, searchTerm];
+            params = [userId, userId, userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm];
         } else {
             // Saved posts WITHOUT search (your original query)
             sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
