@@ -213,7 +213,7 @@ router.post("/saved", async (req, res) => {
         if (rows.length > 0) {
             // Already saved → unsave (delete)
             await db.execute(
-                "DELETE FROM TBL_SAVED WHERE POST_ID = ? AND USER_ID = ?",
+                "DELETE FROM TBL_SAVED WHERE POSTID = ? AND USERID = ?",
                 [postId, userId]
             );
             return res.json({ result: "success", saved: false });

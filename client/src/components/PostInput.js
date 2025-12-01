@@ -100,6 +100,7 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                 console.log(data);
                 alert(data.msg);
                 fnUploadFile(data.result[0].insertId);
+                window.location.reload();
             } else {
                 alert("에러가 발생했습니다.");
             }

@@ -64,7 +64,7 @@ function MyPage() {
         userId: userInfo.userId || "",
         intro: userInfo.intro || "",
         email: userInfo.email || "",
-        profilePic : userInfo.pathImg,
+        profilePic : userInfo.imgPath,
         followers : userInfo.follower
       });
     }
@@ -112,7 +112,7 @@ function MyPage() {
       <div className="myProfileContainer">
                 <div className="profile-picture-wrapper">
                     <img 
-                        src={userInfo?.imgPath}
+                        src={formData.profilePic}
                         alt="profile" 
                         className="profile-picture"
                     />
