@@ -335,12 +335,14 @@ function Posts ({children, posts: externalPosts, variant}) {
                                         </Dialog>
                                     </React.Fragment>
                                 </div>
+                                {!(variant === "myFeed" || decoded?.userId === post.USERID) && (
                                 <div className='save-btn' onClick={() => toggleSave(post.id)}>
                                     {post.isSaved 
                                         ? <BookmarkIcon color="black" />  
                                         : <BookmarkBorderIcon />            
                                     }
                                 </div>
+                                )}
                             </div>
                         </>
                     )}

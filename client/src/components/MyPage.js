@@ -38,6 +38,7 @@ function MyPage() {
     }
 
     const decoded = jwtDecode(token);
+    console.log("decoded token ==>", decoded);
 
     // Fetch full user info from DB
     fetch(`http://localhost:3010/user/${decoded.userId}`)
@@ -111,7 +112,7 @@ function MyPage() {
       <div className="myProfileContainer">
                 <div className="profile-picture-wrapper">
                     <img 
-                        src={userInfo?.IMGPATH}
+                        src={userInfo?.imgPath}
                         alt="profile" 
                         className="profile-picture"
                     />
@@ -119,7 +120,7 @@ function MyPage() {
                 <div className="user-socials-wrapper">
                     <div className="user-socials">
                         <div className="user-socials-details">
-                            <div className="bold">{userInfo?.posts}</div>
+                            <div className="bold">{userInfo?.post_cnt}</div>
                             <div>posts</div>
                         </div>
                         <div className="user-socials-details">
@@ -177,11 +178,11 @@ function MyPage() {
                         <div className="bold">Email</div>
                         <div>
                         {willEdit == false ?
-                        <div>{userInfo?.EMAIL}</div>
+                        <div>{userInfo?.email}</div>
                         :
                             <div><input
                                 type="text"
-                                value={formData?.EMAIL}
+                                value={formData?.email}
                                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                             ></input></div>
                         }

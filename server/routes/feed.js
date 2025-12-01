@@ -40,12 +40,12 @@ router.get("/:userId", async (req, res) => {
     try {
         // 1️⃣ Get all posts with user info
         let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
-                "(SELECT COUNT(*) FROM TBL_LIKES WHERE POST_ID = F.ID) AS likeCount, " +
+                "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
                 "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
-                "CASE WHEN S.USER_ID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+                "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
                 "FROM TBL_FEED F " +
                 "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
-                "LEFT JOIN TBL_SAVED S ON S.POST_ID = F.ID AND S.USER_ID = ? " +
+                "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
                 "ORDER BY F.CDATETIME DESC";
         let [feeds] = await db.query(sql,[userId, userId]);
 
@@ -98,11 +98,11 @@ router.get("/saved/:userId", async (req, res) => {
     let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
               "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
               "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
-              "CASE WHEN S.USER_ID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+              "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
               "FROM TBL_FEED F " +
               "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
-              "INNER JOIN TBL_SAVED S2 ON S2.POST_ID = F.ID AND S2.USER_ID = ? " + 
-              "LEFT JOIN TBL_SAVED S ON S.POST_ID = F.ID AND S.USER_ID = ? " +   
+              "INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? " + 
+              "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +   
               "ORDER BY F.CDATETIME DESC";
 
     // pass userId three times for the three placeholders
@@ -206,7 +206,7 @@ router.post("/saved", async (req, res) => {
     try {
         // Check if this post is already saved by this user
         const [rows] = await db.execute(
-            "SELECT * FROM TBL_SAVED WHERE POST_ID = ? AND USER_ID = ?",
+            "SELECT * FROM TBL_SAVED WHERE POSTID = ? AND USERID = ?",
             [postId, userId]
         );
 
@@ -220,7 +220,7 @@ router.post("/saved", async (req, res) => {
         } else {
             // Not saved → save (insert)
             await db.execute(
-                "INSERT INTO TBL_SAVED (POST_ID, USER_ID, CREATED_AT) VALUES (?, ?, NOW())",
+                "INSERT INTO TBL_SAVED (POSTID, USERID, CREATEDAT) VALUES (?, ?, NOW())",
                 [postId, userId]
             );
             return res.json({ result: "success", saved: true });

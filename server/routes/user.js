@@ -120,7 +120,11 @@ router.get("/:userId", async (req, res) =>{
         // });
 
         // 2. 조인 쿼리 만들어서 하나로 리턴
-        let sql = "SELECT * FROM TBL_USER WHERE USERID = ?";
+        let sql = "SELECT U.*, COUNT(f.id) AS post_cnt "
+                +"FROM TBL_USER U "
+                +"LEFT JOIN tbl_feed f ON u.userId = f.userId  "
+                +"WHERE U.USERID = ? "
+                +"GROUP BY u.userId ";
         let [list] = await db.query(sql, [userId]);
         // console.log(list);
         res.json({
