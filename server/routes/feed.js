@@ -81,6 +81,20 @@ router.get("/:userId", async (req, res) => {
             //  console.log("Found images:", images); // DEBUG: Check what images are returned
         }
 
+        let tags = [];
+        if (feedIds.length > 0) {
+            [tags] = await db.query(`
+                SELECT 
+                    PC.POST_ID,
+                    C.CATEGORY_ID,
+                    C.CATEGORY_NAME
+                FROM TBL_POST_CATEGORY PC
+                INNER JOIN TBL_CATEGORY C ON PC.CATEGORY_ID = C.CATEGORY_ID
+                WHERE PC.POST_ID IN (?)
+            `, [feedIds]);
+            console.log("Tags fetched:", tags);
+        }
+
         // 3️⃣ Attach images to each post
         const posts = feeds.map(feed => {
             return {
@@ -91,6 +105,12 @@ router.get("/:userId", async (req, res) => {
                         imgId: img.imgNo,
                         imgPath: img.imgPath,
                         imgName: img.imgName
+                    })),
+                tags: tags
+                    .filter(tag => tag.POST_ID === feed.id)
+                    .map(tag => ({
+                        categoryId: tag.CATEGORY_ID,
+                        categoryName: tag.CATEGORY_NAME
                     }))
             };
         });
@@ -153,6 +173,11 @@ router.get("/saved/:userId", async (req, res) => {
     // 2) Get images for those feeds (if any)
     const feedIds = feeds.map(f => f.id);
 
+    console.log("=== FEED DEBUG ===");
+    console.log("Number of feeds:", feeds.length);
+    console.log("Feed IDs:", feedIds);
+    console.log("Feed IDs length:", feedIds.length);
+
     let images = [];
         if (feedIds.length > 0) {
             [images] = await db.query(`
@@ -162,7 +187,26 @@ router.get("/saved/:userId", async (req, res) => {
             //  console.log("Found images:", images); // DEBUG: Check what images are returned
         }
 
-    // 3) attach images to their posts
+    // 3) Get all tags/categories for these posts    
+    let tags = [];
+    console.log("About to fetch tags...");
+        if (feedIds.length > 0) {
+            console.log("Fetching tags for feed IDs:", feedIds);
+            [tags] = await db.query(`
+                SELECT 
+                    PC.POST_ID,
+                    C.CATEGORY_ID,
+                    C.CATEGORY_NAME
+                FROM TBL_POST_CATEGORY PC
+                INNER JOIN TBL_CATEGORY C ON PC.CATEGORY_ID = C.CATEGORY_ID
+                WHERE PC.POST_ID IN (?)
+            `, [feedIds]);
+            console.log("=== TAGS DEBUG ===");
+            console.log("Feed IDs:", feedIds);
+            console.log("Tags fetched from DB:", tags);
+        }
+
+    // 3) Attach images AND tags to each post
     const posts = feeds.map(feed => {
             return {
                 ...feed,
@@ -172,6 +216,12 @@ router.get("/saved/:userId", async (req, res) => {
                         imgId: img.imgNo,
                         imgPath: img.imgPath,
                         imgName: img.imgName
+                    })),
+                tags: tags
+                    .filter(tag => tag.POST_ID === feed.id)
+                    .map(tag => ({
+                        categoryId: tag.CATEGORY_ID,
+                        categoryName: tag.CATEGORY_NAME
                     }))
             };
         });
@@ -274,22 +324,56 @@ router.post("/saved", async (req, res) => {
     }
 });
 
-router.post('/:userId', async (req, res) => {
-    let {userId} = req.params;
-    let { content, title, address, restaurant } = req.body;
-    console.log("What is in the body before I insert ==>",req.body);
-    try {
-        let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT) VALUES(?, ?, NOW(), ?, ?, ?)";
-        let result = await db.query(sql, [userId, content, title, address, restaurant]);
-        // console.log("What has been posted ==>", result);
-        res.json({
-            msg : "추가되었습니다 !",
-            result : result
-        });
-    } catch (error) {
-        console.log(error);
+async function getOrCreateCategory(categoryName) {
+    // Check if category exists
+    let [existing] = await db.query(
+        "SELECT CATEGORY_ID FROM TBL_CATEGORY WHERE CATEGORY_NAME = ?",
+        [categoryName]
+    );
+    
+    if (existing.length > 0) {
+        return existing[0].CATEGORY_ID;
     }
-})
+    
+    // Create new category
+    let [result] = await db.query(
+        "INSERT INTO TBL_CATEGORY (CATEGORY_NAME) VALUES (?)",
+        [categoryName]
+    );
+    
+    return result.insertId;
+}
+
+// router.post('/:userId', async (req, res) => {
+//     let {userId} = req.params;
+//     let { content, title, address, restaurant, tags } = req.body;
+//     console.log("What is in the body before I insert ==>",req.body);
+//     try {
+//         // 1) Insert the post
+//         let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT) VALUES(?, ?, NOW(), ?, ?, ?)";
+//         let result = await db.query(sql, [userId, content, title, address, restaurant]);
+//         let postId = result.insertId;
+//         // 2) Insert tags if provided
+//         if (tags && Array.isArray(tags) && tags.length > 0) {
+//             for (let tagName of tags) {
+//                 // Get or create the category
+//                 let categoryId = await getOrCreateCategory(tagName);
+                
+//                 // Link post to category
+//                 await db.query(
+//                     "INSERT INTO TBL_POST_CATEGORY (POST_ID, CATEGORY_ID) VALUES (?, ?)",
+//                     [postId, categoryId]
+//                 );
+//             }
+//         }
+//         res.json({
+//             msg : "추가되었습니다 !",
+//             result : result
+//         });
+//     } catch (error) {
+//         console.log(error);
+//     }
+// })
 
 // router.put("/:userId", async (req, res) =>{
 //     let {userId} = req.params;
@@ -305,6 +389,50 @@ router.post('/:userId', async (req, res) => {
 //     }
 
 // })
+
+router.post('/:userId', async (req, res) => {
+    let {userId} = req.params;
+    let { content, title, address, restaurant, tags } = req.body;
+    console.log("What is in the body before I insert ==>", req.body);
+    
+    try {
+        // 1) Insert the post - use array destructuring
+        let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT) VALUES(?, ?, NOW(), ?, ?, ?)";
+        let [result] = await db.query(sql, [userId, content, title, address, restaurant]);
+        //  ^^^^^^ Add brackets to destructure
+        
+        let postId = result.insertId;
+        console.log("New post ID:", postId);
+        
+        if (!postId) {
+            throw new Error("Failed to get post ID after insert");
+        }
+        
+        // 2) Insert tags if provided
+        if (tags && Array.isArray(tags) && tags.length > 0) {
+            console.log("Processing tags:", tags);
+            
+            for (let tagName of tags) {
+                let categoryId = await getOrCreateCategory(tagName);
+                console.log(`Linking post ${postId} to category ${categoryId}`);
+                
+                await db.query(
+                    "INSERT INTO TBL_POST_CATEGORY (POST_ID, CATEGORY_ID) VALUES (?, ?)",
+                    [postId, categoryId]
+                );
+            }
+        }
+        
+        res.json({
+            msg: "추가되었습니다 !",
+            result: result,
+            postId: postId
+        });
+    } catch (error) {
+        console.log("Error creating post:", error);
+        res.status(500).json({ error: "Failed to create post", details: error.message });
+    }
+});
 
 router.put("/:userId", async (req, res) =>{
     let {userId} = req.params;

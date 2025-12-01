@@ -95,7 +95,8 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             title : title,
             restaurant : restaurant,
             address : address,
-            content : content
+            content : content,
+            tags: tags
         };
         fetch("http://localhost:3010/feed/"+decoded.userId, {
         method : "POST", 
@@ -109,7 +110,7 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             if(data.result){
                 console.log(data);
                 alert(data.msg);
-                fnUploadFile(data.result[0].insertId);
+                fnUploadFile(data.postId);;
                 window.location.reload();
             } else {
                 alert("에러가 발생했습니다.");

@@ -102,7 +102,8 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                             isLiked: post.isLikedByUser === 1,
                             likeCount: post.likeCount,
                             commentCount: commentData.list.length,
-                            isSaved: post.isSavedByUser === 1
+                            isSaved: post.isSavedByUser === 1,
+                            tags: post.tags || []
                         };
                     })
                 );
@@ -137,7 +138,8 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                             isLiked: post.isLikedByUser === 1,      
                             likeCount: post.likeCount,               
                             commentCount: commentData.list?.length || 0,
-                            isSaved: post.isSavedByUser === 1 
+                            isSaved: post.isSavedByUser === 1,
+                            tags: post.tags || []
                         };
                     } catch (err) {
                         console.error("Error fetching comments:", err);
@@ -323,10 +325,11 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                             })}
                             
                             <div className="titleSection">
-                                <div ><Pen size={35} /></div>
+                                <div><Pen size={35} /></div>
                                 <div className="title">{post.TITLE}</div>
-                                <div className="tags">romantic</div>
-                                <div className="tags">french</div>
+                                {post.tags && post.tags.map((tag, idx) => (
+                                    <div key={idx} className="tags">{tag.categoryName}</div>
+                                ))}
                             </div>
                             <div className="locationSection">
                                 <div ><Soup size={15} /></div>
