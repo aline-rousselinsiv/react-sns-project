@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 
-function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit }){
+function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit, isFollowing, onFollowToggle }){
     const [writePost, setWritePost] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
@@ -78,9 +78,6 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                 })
     }
 
-
-    
-
     return <>
         <>
             <Box
@@ -132,6 +129,22 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                         }
                     </Typography>
                 </Box> 
+                {variant === "post" && post?.USERID !== decoded.userId && (
+                    <Button
+                        variant="contained"
+                        size="small"
+                        sx={{
+                            ml: 2,  // ✅ Changed from 'auto' to 2 (small margin)
+                            backgroundColor: isFollowing ? 'grey' : 'rgba(169, 211, 195, 1)',
+                            '&:hover': { 
+                                backgroundColor: isFollowing ? '#666' : 'rgba(150, 190, 175, 1)' 
+                            },
+                        }}
+                        onClick={onFollowToggle}
+                    >
+                        {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
+                    </Button>
+                )}
                 {variant === "myFeed" && (
                     <div className="my-profile-btn">
                         <DialogActions sx={{ justifyContent: "center" }}>

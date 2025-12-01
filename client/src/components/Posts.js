@@ -33,38 +33,7 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
     
     let navigate = useNavigate();
     let [posts, setPosts] = useState([]);
-    console.log("The current keyword is : ", keyword);
-    console.log("what I am fetching? >>", posts);
-
-    // My version
-
-    // const handleGetFeed = React.useCallback(() => {
-    //     if (!token) {
-    //         alert("로그인 먼저 하세요.");
-    //         navigate("/");
-    //         return;
-    //     }
-
-    //     const decoded = jwtDecode(token);
-    //     fetch("http://localhost:3010/feed/" + decoded.userId)
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             if (data.result === "success") {
-    //                 setPosts(data.list.map(post => ({
-    //                     ...post,
-    //                     isLiked: post.isLikedByUser === 1,
-    //                     likeCount: post.likeCount,
-    //                 })));
-    //             }
-    //         });
-    // }, [token, navigate]);
-        
-    // useEffect(()=>{
-    //     // console.log("서버에서 요청해서 제품 목록을 가져오는 부분");
-    //     handleGetFeed();
-    // }, [])
-
-    // chatGPT's version
+    let [followingUsers, setFollowingUsers] = useState(new Set());
 
     const fetchCommentCount = async (postId) => {
         try {
@@ -115,14 +84,6 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
             console.error("Error fetching feed:", err);
         }
     }, [token, navigate, keyword]);
-
-    // useEffect(() => {
-    //     if (externalPosts) {
-    //         setPosts(externalPosts);   // <-- use posts from parent
-    //         return;
-    //     }
-    // handleGetFeed(); 
-    // }, [externalPosts, keyword]);
 
     useEffect(() => {
     
@@ -283,22 +244,48 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
         .catch(err => console.error(err));
     };
 
-    const [editingPostId, setEditingPostId] = useState(null);
-    // return <>
+    useEffect(() => {
+        if (decoded?.userId) {
+            fetch(`http://localhost:3010/user/following/${decoded.userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === "success") {
+                        const followingIds = new Set(data.following.map(u => u.USERID));
+                        setFollowingUsers(followingIds);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    }, [decoded?.userId]);
 
-    //     {(externalPosts || posts).length > 0 ?
-    //     (externalPosts || posts)
-    //     .filter(post => {
-    //         // For savedPosts variant, show all posts (don't filter by user)
-    //         if (variant === "savedPosts") {
-    //             return true;
-    //         }
-    //         // For other variants, apply the original logic
-    //         return children.props.variant !== "myFeed" || post.USERID === decoded.userId;
-    //     })
-    //     .map((post, index) => (
-            
-    //         <div className="postContainer" key={index}>
+    const handleFollowToggle = (userId) => {
+        fetch("http://localhost:3010/user/follow", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                followerId: decoded.userId,
+                followingId: userId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.result === "success") {
+                setFollowingUsers(prev => {
+                    const newSet = new Set(prev);
+                    if (data.isFollowing) {
+                        newSet.add(userId); // Add to following
+                    } else {
+                        newSet.delete(userId); // Remove from following
+                    }
+                    return newSet;
+                });
+            }
+        })
+        .catch(err => console.error(err));
+    };
+
+    const [editingPostId, setEditingPostId] = useState(null);
+
     return <>
     {posts.length > 0 ?
         posts
@@ -323,7 +310,9 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                             {cloneElement(children, { 
                                 post, 
                                 refreshPosts: handleGetFeed, 
-                                onWillEdit: (postId, value) => setEditingPostId(value ? postId : null) 
+                                onWillEdit: (postId, value) => setEditingPostId(value ? postId : null),
+                                isFollowing: followingUsers.has(post.USERID), // ✅ Pass follow state
+                                onFollowToggle: () => handleFollowToggle(post.USERID) 
                             })}
                             
                             <div className="titleSection">
