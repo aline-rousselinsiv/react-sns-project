@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import { CircleDollarSign  } from 'lucide-react';
 
 import { useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
@@ -16,6 +17,8 @@ function PostInput({variant, post, onCancel, refreshPosts}){
     let navigate = useNavigate();
     const [tags, setTags] = useState([]);
     const [input, setInput] = useState("");
+    const [priceRating, setPriceRating] = useState(0);  
+    // const [hoverRating, setHoverRating] = useState(0);
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && input.trim() !== "") {
@@ -96,7 +99,8 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             restaurant : restaurant,
             address : address,
             content : content,
-            tags: tags
+            tags: tags,
+            priceRating : priceRating
         };
         fetch("http://localhost:3010/feed/"+decoded.userId, {
         method : "POST", 
@@ -193,7 +197,10 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                 const existingTags = post.tags.map(tag => tag.categoryName);
                 setTags(existingTags);
             }
-        }
+
+            // ✅ Load existing price rating
+            setPriceRating(post.RATING || 0);
+            }
     }, [variant, post]);
 
     // cancel button function 
@@ -247,7 +254,8 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             content, 
             postId: post.id, 
             deletedImages: removedImages,
-            tags: tags 
+            tags: tags,
+            priceRating: priceRating
         };
 
         // 1️⃣ Update post content AND delete removed images
@@ -367,7 +375,7 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                             <input
                                 style={{ justifyContent : "center", border: "none", outline: "none", flexGrow: 1, minWidth: '100px'}}
                                 type="text"
-                                placeholder="Pick 3 words that best decribe the atmosphere and press ENTER"
+                                placeholder="Pick 3 words that best describe the atmosphere and press ENTER"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
@@ -381,8 +389,50 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                         </Box>
                     </div>
                 </div>
+                <div
+                    style={{
+                        borderBottom : "1px grey solid",
+                        textAlign : "left",
+                        // justifyContent : "center",
+                        marginTop : "40px",
+                        marginBottom : "10px",
+                        color : "grey",
+                        display: "flex",
+                        flexDirection : "row",
+                        gap : " 20px",
+                        width: "110ch",        // ⭐ Same width as your TextFields
+                        margin: "0 auto",
+                        alignItems: "center"
+                    }}
+                >
+                    <div style={{}}>Price</div>
+                    <div style={{ display: "flex", gap: "5px", cursor: "pointer" }}>
+                        {[1, 2, 3, 4, 5].map((coin) => (
+                            <CircleDollarSign
+                                key={coin}
+                                size={30}
+                                style={{
+                                    color: coin <= (priceRating) ? "#464444ff" : "#D3D3D3",
+                                    fill: coin <= (priceRating) ? "#d4d4d4ff" : "transparent",
+                                    transition: "all 0.2s ease"
+                                }}
+                                // onMouseEnter={() => setHoverRating(coin)}
+                                // onMouseLeave={() => setHoverRating(0)}
+                                onClick={() => setPriceRating(coin)}
+                            />
+                        ))}
+                    </div>
+                    <div style={{ fontSize: "14px", color: "#666" }}>
+                        {priceRating === 0 && "Click to rate"}
+                        {priceRating === 1 && "Budget"}
+                        {priceRating === 2 && "Affordable"}
+                        {priceRating === 3 && "Moderate"}
+                        {priceRating === 4 && "Upscale"}
+                        {priceRating === 5 && "Fine Dining"}
+                    </div>
+                </div>
                 
-                <TextField
+                {/* <TextField
                     
                     id="standard-read-only-input"
                     defaultValue="Price"
@@ -393,7 +443,7 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                         sx : {color : "grey", marginTop : "15px"}
                         },
                     }}
-                />
+                /> */}
                 <TextField
                     multiline
                     rows={4}

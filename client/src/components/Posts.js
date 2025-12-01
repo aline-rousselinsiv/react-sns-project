@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { cloneElement } from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 
 import Comments from './Comments';
@@ -139,7 +140,8 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                             likeCount: post.likeCount,               
                             commentCount: commentData.list?.length || 0,
                             isSaved: post.isSavedByUser === 1,
-                            tags: post.tags || []
+                            tags: post.tags || [],
+                            priceRating: post.RATING || 0
                         };
                     } catch (err) {
                         console.error("Error fetching comments:", err);
@@ -332,12 +334,23 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                                 ))}
                             </div>
                             <div className="locationSection">
-                                <div ><Soup size={15} /></div>
+                                <div ><Soup size={20} strokeWidth={2.5} /></div>
                                 <div className="restaurantName">{post.RESTAURANT}</div>
-                                <div ><MapPin size={15} /></div>
+                                <div ><MapPin size={20} strokeWidth={2.5}/></div>
                                 <div className="restaurantAddr">{post.ADDRESS}</div>
-                                <div ><HandCoins size={15} /></div>
-                                <div className="restaurantPrice">Budget</div>
+                                <div ><HandCoins size={20} strokeWidth={2.5}/></div>
+                                <div className="restaurantPrice">
+                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                        <div className="restaurantPrice">
+                                            {post.RATING === 1 && "Budget"}
+                                            {post.RATING === 2 && "Affordable"}
+                                            {post.RATING === 3 && "Moderate"}
+                                            {post.RATING === 4 && "Upscale"}
+                                            {post.RATING === 5 && "Fine Dining"}
+                                            {!post.RATING && "Not rated"}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div className="content">{post.content}</div>
                             <div style={{marginTop : "50px", marginBottom : "50px"}}>

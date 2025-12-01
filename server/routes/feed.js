@@ -392,13 +392,13 @@ async function getOrCreateCategory(categoryName) {
 
 router.post('/:userId', async (req, res) => {
     let {userId} = req.params;
-    let { content, title, address, restaurant, tags } = req.body;
+    let { content, title, address, restaurant, tags, priceRating } = req.body;
     console.log("What is in the body before I insert ==>", req.body);
     
     try {
         // 1) Insert the post - use array destructuring
-        let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT) VALUES(?, ?, NOW(), ?, ?, ?)";
-        let [result] = await db.query(sql, [userId, content, title, address, restaurant]);
+        let sql = "INSERT INTO TBL_FEED (USERID, CONTENT, CDATETIME, TITLE, ADDRESS, RESTAURANT, RATING) VALUES(?, ?, NOW(), ?, ?, ?, ?)";
+        let [result] = await db.query(sql, [userId, content, title, address, restaurant, priceRating]);
         //  ^^^^^^ Add brackets to destructure
         
         let postId = result.insertId;
@@ -436,14 +436,14 @@ router.post('/:userId', async (req, res) => {
 
 router.put("/:userId", async (req, res) =>{
     let {userId} = req.params;
-    let {postId, content, title, address, restaurant, deletedImages, tags} = req.body;
+    let {postId, content, title, address, restaurant, deletedImages, tags, priceRating} = req.body;
     console.log("Making sure the deleted images are an actual array? ==>", deletedImages);
 
     try {
         // 1️⃣ Update the post content
         await db.query(
-            "UPDATE TBL_FEED SET CONTENT = ?, TITLE = ?, ADDRESS = ?, RESTAURANT = ? WHERE USERID = ? AND ID = ?",
-            [content, title, address, restaurant, userId, postId]
+            "UPDATE TBL_FEED SET CONTENT = ?, TITLE = ?, ADDRESS = ?, RESTAURANT = ?, RATING = ? WHERE USERID = ? AND ID = ?",
+            [content, title, address, restaurant, priceRating, userId, postId]
         );
 
         // 2️⃣ Delete removed images if any
