@@ -19,11 +19,21 @@ function PostInput({variant, post, onCancel, refreshPosts}){
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && input.trim() !== "") {
-        const newTag = input.trim();
-        if (!tags.includes(newTag)) {
-            setTags([...tags, newTag]);
-        }
-        setInput("");
+            // ✅ Check if already have 3 tags
+            if (tags.length >= 3) {
+                alert("You can only add up to 3 tags");
+                return;
+            }
+            
+            // ✅ Check if tag already exists (optional - prevents duplicates)
+            if (tags.includes(input.trim())) {
+                alert("This tag already exists");
+                setInput("");
+                return;
+            }
+            
+            setTags([...tags, input.trim()]);
+            setInput("");
         }
     };
 
@@ -339,14 +349,21 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                                 </Box>
                             </Box>
                             ))}
+                            {tags.length < 3 && (
                             <input
                                 style={{ justifyContent : "center", border: "none", outline: "none", flexGrow: 1, minWidth: '100px'}}
                                 type="text"
-                                placeholder="Type & press Enter"
+                                placeholder="Pick 3 words that best decribe the atmosphere and press ENTER"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                             />
+                            )}
+                            {tags.length === 3 && (
+                                <span style={{ color: "#666", fontStyle: "italic", padding: "8px" }}>
+                                    Maximum 3 tags reached
+                                </span>
+                            )}
                         </Box>
                     </div>
                 </div>
