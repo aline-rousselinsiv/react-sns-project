@@ -114,7 +114,18 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                    <Typography 
+                        variant="subtitle1" 
+                        sx={{ 
+                            fontWeight: 'bold',
+                            cursor: variant === "post" ? 'pointer' : 'default',
+                            '&:hover': variant === "post" ? { textDecoration: 'underline' } : {}
+                        }}
+                        onClick={() => {
+                            if (variant === "post" && post?.USERID) {
+                                navigate(`/user/${post.USERID}`); // ✅ Navigate to user profile
+                            }
+                        }}>
                         {variant == "post" ? post?.USERNAME 
                         : variant == "comment" ? comment?.userName
                         : userInfo?.userName

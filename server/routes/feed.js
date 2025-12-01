@@ -35,6 +35,79 @@ router.post('/upload', upload.array('file'), async (req, res) => {
     }
 });
 
+// Get posts BY a specific user (for viewing their public profile)
+router.get("/user/:userId", async (req, res) => {
+    const { userId } = req.params;
+    const currentUserId = req.query.currentUserId; // Optional: to check if current user liked/saved
+    
+    try {
+        let sql = `
+            SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, 
+            (SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount,
+            ${currentUserId ? `(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser,` : '0 AS isLikedByUser,'}
+            ${currentUserId ? `CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser` : '0 AS isSavedByUser'}
+            FROM TBL_FEED F 
+            INNER JOIN TBL_USER U ON F.USERID = U.USERID 
+            ${currentUserId ? 'LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ?' : ''}
+            WHERE F.USERID = ?
+            ORDER BY F.CDATETIME DESC
+        `;
+        
+        let params = currentUserId ? [currentUserId, currentUserId, userId] : [userId];
+        let [feeds] = await db.query(sql, params);
+
+        // Get images for these posts
+        const feedIds = feeds.map(f => f.id);
+        let images = [];
+        if (feedIds.length > 0) {
+            [images] = await db.query(
+                `SELECT * FROM TBL_FEED_IMG WHERE FEEDID IN (?)`,
+                [feedIds]
+            );
+        }
+
+        // Get tags for these posts
+        let tags = [];
+        if (feedIds.length > 0) {
+            [tags] = await db.query(`
+                SELECT 
+                    PC.POST_ID,
+                    C.CATEGORY_ID,
+                    C.CATEGORY_NAME
+                FROM TBL_POST_CATEGORY PC
+                INNER JOIN TBL_CATEGORY C ON PC.CATEGORY_ID = C.CATEGORY_ID
+                WHERE PC.POST_ID IN (?)
+            `, [feedIds]);
+        }
+
+        // Attach images and tags to posts
+        const posts = feeds.map(feed => ({
+            ...feed,
+            images: images
+                .filter(img => img.feedId === feed.id)
+                .map(img => ({
+                    imgId: img.imgNo,
+                    imgPath: img.imgPath,
+                    imgName: img.imgName
+                })),
+            tags: tags
+                .filter(tag => tag.POST_ID === feed.id)
+                .map(tag => ({
+                    categoryId: tag.CATEGORY_ID,
+                    categoryName: tag.CATEGORY_NAME
+                }))
+        }));
+
+        res.json({
+            result: "success",
+            list: posts
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error", message: "Server error" });
+    }
+});
+
 router.get("/:userId", async (req, res) => {
     let {userId} = req.params;
     const keyword = req.query.keyword || '';  // Get from query string
