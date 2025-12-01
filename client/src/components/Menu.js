@@ -26,7 +26,7 @@ function Menu() {
         '& .MuiDrawer-paper': {
           width: 240, // Drawer 내부의 너비 설정
           boxSizing: 'border-box',
-          top: '180px',
+          top: '120px',
           position: 'sticky', // <--- make it sticky
           height: 'calc(100vh - 180px)' // keep it within viewport
         },
@@ -47,7 +47,7 @@ function Menu() {
         <ListItem button component={NavLink} to="/mypage" sx={navItemStyles}>
           <ListItemText primary="MY PROFILE" />
         </ListItem>
-        <ListItem button component={NavLink} to="" sx={navItemStyles}>
+        <ListItem button component={NavLink} to="/savedposts" sx={navItemStyles}>
           <ListItemText primary="SAVED POSTS" />
         </ListItem>
       </List>

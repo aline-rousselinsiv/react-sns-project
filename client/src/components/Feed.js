@@ -32,10 +32,10 @@ import Posts from './Posts';
 import UserProfilePost from './UserProfilePost';
 
 
-function Feed({ variant }) {
+function Feed({ variant, posts }) {
   return (
     <>
-      {variant !== "profileFeed" ? (
+      {variant !== "profileFeed" && variant !== "savedPosts"? (
         <>
           <WritePost variant="write-post">
             <UserProfilePost variant="writePost" />
@@ -45,8 +45,12 @@ function Feed({ variant }) {
           </Posts>
         </>
       ) : (
-        <Posts>
-          <UserProfilePost variant="myFeed"/>
+        <Posts posts={posts} variant={variant}>
+          {variant === "savedPosts" ? (
+            <UserProfilePost variant="post" />  // This will show just avatar + username
+          ) : (
+            <UserProfilePost variant="myFeed"/>
+          )}
         </Posts>
       )}
     </>

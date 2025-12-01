@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 
-function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit }){
+function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit, posts }){
     const [writePost, setWritePost] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
@@ -97,7 +97,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
             {variant == "write-comment"? 
                 <>
                 <Avatar
-                    src={variant == "post" ? post?.USER_IMG : userInfo?.imgPath}
+                src={variant == "post" ? post?.USER_IMG : userInfo?.IMGPATH}
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
                 <div className="comment-input">
@@ -112,7 +112,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                 <>
                 
                 <Avatar
-                    src={variant == "post" ? post?.USER_IMG : userInfo?.imgPath}
+                    src={variant == "post" ? post?.USER_IMG : userInfo?.IMGPATH}
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>

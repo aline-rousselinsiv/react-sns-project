@@ -10,6 +10,7 @@ import Menu from './components/Menu'; // Menu로 변경
 import Signup from './components/Signup';
 import Header from './components/Header';
 import RightBar from './components/RightBar';
+import SavedPosts from './components/SavedPosts';
 
 function App() {
   const location = useLocation();
@@ -39,6 +40,7 @@ function App() {
           <Route path="/feed" element={<Feed />} />
           <Route path="/register" element={<Register />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="/savedposts" element={<SavedPosts />} />
         </Routes>
       </Box>
       {/* Right-side bar */}

@@ -14,14 +14,18 @@ import DialogActions from '@mui/material/DialogActions';
 import Feed from './Feed';
 
 function MyPage() {
+    
   const [userInfo, setUserInfo] = useState(null);
+  console.log("userInfo ==>", userInfo);
   const [formData, setFormData] = useState({
     userName: "",
     userId: "",
     intro: "",
     email: ""
   });
+  console.log("formData ==>", formData)
   const [willEdit, setWillEdit] = useState(false);
+  const [file, setFile] = React.useState([]);
   const navigate = useNavigate();
 
   // Fetch token and decode
@@ -64,10 +68,41 @@ function MyPage() {
       });
     }
   }, [userInfo]);
+  
 
   if (!userInfo) return null;
 
-  
+  // profile picture upload
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0]; // single file
+    if (selectedFile) {
+        fnUploadFile(selectedFile);
+    }
+    };
+
+    
+    const fnUploadFile = (fileToUpload)=>{
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", fileToUpload); 
+        formDataUpload.append("userId", userInfo.userId);
+        fetch("http://localhost:3010/user/upload", {
+        method: "POST",
+        body: formDataUpload
+        })
+        .then(res => res.json())
+        .then(data => {
+        if (data.result === "success") {
+            console.log(data);
+            setUserInfo(prev => ({ ...prev, IMGPATH: data.newProfilePic }));
+            }
+        })
+        .catch(err => {
+        console.error(err);
+        });
+    }
+
+    
 
   return (
     <>
@@ -76,7 +111,7 @@ function MyPage() {
       <div className="myProfileContainer">
                 <div className="profile-picture-wrapper">
                     <img 
-                        src={userInfo?.profilePic}
+                        src={userInfo?.IMGPATH}
                         alt="profile" 
                         className="profile-picture"
                     />
@@ -98,6 +133,13 @@ function MyPage() {
                     </div>
                 </div>
                 <div className="camera-icon">
+                    <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="file-upload"
+                        type="file"
+                        onChange={handleFileChange}
+                    />
                     <label htmlFor="file-upload">
                         <IconButton component="span">
                             <AddAPhotoIcon sx={{ color: 'black', justifyContent:"center" }} />
@@ -125,7 +167,7 @@ function MyPage() {
                         :
                             <div><input
                                 type="text"
-                                value={formData.userId}
+                                value={formData?.userId}
                                 onChange={(e) => setFormData({...formData, userId: e.target.value})}
                             ></input></div>
                         }
@@ -135,11 +177,11 @@ function MyPage() {
                         <div className="bold">Email</div>
                         <div>
                         {willEdit == false ?
-                        <div>{userInfo?.email}</div>
+                        <div>{userInfo?.EMAIL}</div>
                         :
                             <div><input
                                 type="text"
-                                value={formData.email}
+                                value={formData?.EMAIL}
                                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                             ></input></div>
                         }

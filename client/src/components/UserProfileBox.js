@@ -42,7 +42,7 @@ function UserProfileBox({variant}){
                 marginBottom : '20px'
             }}>
             <Avatar 
-                src={userInfo?.imgPath}
+                src={userInfo?.IMGPATH}
                 sx={{ width: 70, height: 70, mb: 1 }}
             />
 
