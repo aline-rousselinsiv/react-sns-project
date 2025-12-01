@@ -50,7 +50,7 @@ function Header ({ keyword, setKeyword }){
                         style={{
                             position: "absolute",
                             right: "90px",
-                            top: "50%",
+                            top: "52%",
                             transform: "translateY(-50%)",
                             cursor: "pointer",
                             color: "#555"

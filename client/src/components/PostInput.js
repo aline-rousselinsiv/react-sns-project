@@ -187,6 +187,12 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             }).filter(f => f.imgId !== null); // only keep ones with an id
 
             setFile(existingFiles);
+
+            // Load existing tags
+            if (post.tags && Array.isArray(post.tags)) {
+                const existingTags = post.tags.map(tag => tag.categoryName);
+                setTags(existingTags);
+            }
         }
     }, [variant, post]);
 
@@ -223,19 +229,26 @@ function PostInput({variant, post, onCancel, refreshPosts}){
         if (content === "") { alert("Enter a description!"); return; }
 
         // Determine which existing images were removed
-        // Determine which existing images were removed (using normalized ids)
-            const existingImages = files.filter(f => f.imgId !== undefined && f.imgId !== null);
+        const existingImages = files.filter(f => f.imgId !== undefined && f.imgId !== null);
 
-            // build an array of ids that are currently on the server (normalize keys)
-            const serverImageIds = (post.images || []).map(img => img.ID ?? img.IMGNO ?? img.imgId ?? null)
-                .filter(id => id !== null);
+        // build an array of ids that are currently on the server (normalize keys)
+        const serverImageIds = (post.images || []).map(img => img.ID ?? img.IMGNO ?? img.imgId ?? null)
+            .filter(id => id !== null);
 
-            // now compute removed IDs: those that were on the server but are NOT in existingImages
-            const removedImages = serverImageIds.filter(serverId =>
-                !existingImages.some(f => f.imgId === serverId)
-            );
+        // now compute removed IDs: those that were on the server but are NOT in existingImages
+        const removedImages = serverImageIds.filter(serverId =>
+            !existingImages.some(f => f.imgId === serverId)
+        );
 
-        const param = { title, restaurant, address, content, postId: post.id, deletedImages: removedImages };
+        const param = { 
+            title, 
+            restaurant, 
+            address, 
+            content, 
+            postId: post.id, 
+            deletedImages: removedImages,
+            tags: tags 
+        };
 
         // 1️⃣ Update post content AND delete removed images
         fetch(`http://localhost:3010/feed/${decoded.userId}`, {
@@ -265,7 +278,7 @@ function PostInput({variant, post, onCancel, refreshPosts}){
             if (onCancel) onCancel(); // exit edit mode
         })
         .catch(err => {
-            console.error(err);
+            console.error("Full error:", err);  // ✅ Better error log
             alert("Error updating post!");
         });
     }

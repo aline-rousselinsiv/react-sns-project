@@ -436,7 +436,7 @@ router.post('/:userId', async (req, res) => {
 
 router.put("/:userId", async (req, res) =>{
     let {userId} = req.params;
-    let {postId, content, title, address, restaurant, deletedImages} = req.body;
+    let {postId, content, title, address, restaurant, deletedImages, tags} = req.body;
     console.log("Making sure the deleted images are an actual array? ==>", deletedImages);
 
     try {
@@ -455,6 +455,27 @@ router.put("/:userId", async (req, res) =>{
                 if (fs.existsSync(path)) fs.unlinkSync(path);
             }
             await db.query("DELETE FROM TBL_FEED_IMG WHERE IMGNO IN (?)", [deletedImages]); 
+        }
+
+         // ✅ 3️⃣ Update tags if provided
+         if (tags !== undefined && tags !== null && Array.isArray(tags)) {
+            console.log("Updating tags to:", tags);
+            
+            // Delete all existing tags for this post
+            await db.query("DELETE FROM TBL_POST_CATEGORY WHERE POST_ID = ?", [postId]);
+            
+            // Insert new tags (only if there are any)
+            if (tags.length > 0) {
+                for (let tagName of tags) {
+                    let categoryId = await getOrCreateCategory(tagName);
+                    await db.query(
+                        "INSERT INTO TBL_POST_CATEGORY (POST_ID, CATEGORY_ID) VALUES (?, ?)",
+                        [postId, categoryId]
+                    );
+                }
+            }
+        } else {
+            console.log("No tags provided in request, skipping tag update");
         }
 
         res.json({ result: "success" });
