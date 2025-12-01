@@ -28,6 +28,9 @@ function MyPage() {
   const [file, setFile] = React.useState([]);
   const navigate = useNavigate();
 
+  const [existingEmail, setExistingEmail] = useState(null);
+  const [originalEmail, setOriginalEmail] = useState("")
+
   // Fetch token and decode
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,6 +52,7 @@ function MyPage() {
           ...decoded,        // keep token info
           ...data.info       // overwrite with DB info
         });
+        setOriginalEmail(data.info.email);
       })
       .catch(err => {
         console.error("Failed to fetch user info:", err);
@@ -68,8 +72,47 @@ function MyPage() {
         followers : userInfo.follower
       });
     }
-  }, [userInfo]);
-  
+  }, [userInfo]);   
+
+  // ✅ Email duplicate check function
+  function handleEmailCheck(email) {
+    // Don't check if it's the same as original
+    if (email === originalEmail) {
+      setExistingEmail(null);
+      return;
+    }
+
+    let param = { email: email };
+    fetch("http://localhost:3010/user/email", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(param)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.result === "existing email") {
+        setExistingEmail(false);
+      } else {
+        setExistingEmail(true);
+      }
+    });
+  }
+
+  // ✅ Debounced email check
+  useEffect(() => {
+    if (!willEdit || !formData.email || formData.email === originalEmail) {
+      setExistingEmail(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleEmailCheck(formData.email);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.email, willEdit]);
 
   if (!userInfo) return null;
 
@@ -82,7 +125,6 @@ function MyPage() {
     }
     };
 
-    
     const fnUploadFile = (fileToUpload)=>{
         const formDataUpload = new FormData();
         formDataUpload.append("file", fileToUpload); 
@@ -103,7 +145,62 @@ function MyPage() {
         });
     }
 
-    
+    // ✅ Handle save with validation
+    const handleSave = () => {
+    // Validate email only
+        if (formData.email !== originalEmail) {
+        if (existingEmail === null) {
+            alert("Please wait while we check email availability.");
+            return;
+        }
+        if (existingEmail === false) {
+            alert("This email is already in use. Please use another.");
+            return;
+        }
+        }
+
+        // Validate email format
+        if (!formData.email.includes("@") || !formData.email.includes(".")) {
+        alert("Invalid email format.");
+        return;
+        }
+
+        // Validate required fields
+        if (!formData.userName || !formData.email) {
+        alert("Please fill in all required fields.");
+        return;
+        }
+
+        fetch("http://localhost:3010/user", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+        })
+        .then((res) => res.json())
+        .then((data) => {
+        if(data.result == "success"){
+            setUserInfo(prev => ({
+            ...prev,
+            userName: formData.userName,
+            email: formData.email,
+            intro: formData.intro
+            }));
+            
+            setOriginalEmail(formData.email);
+            alert("Profile updated successfully!");
+            setWillEdit(false);
+            setExistingEmail(null);
+        } else {
+            alert("Failed to update profile. Please try again.");
+        }
+        })
+        .catch(err => {
+        console.error("Error updating profile:", err);
+        alert("An error occurred. Please try again.");
+        });
+    };
 
   return (
     <>
@@ -163,15 +260,7 @@ function MyPage() {
                     <div className="user-info-details">
                         <div className="bold">UserName</div>
                         <div>
-                        {willEdit == false ?
                         <div>@{userInfo?.userId}</div>
-                        :
-                            <div><input
-                                type="text"
-                                value={formData?.userId}
-                                onChange={(e) => setFormData({...formData, userId: e.target.value})}
-                            ></input></div>
-                        }
                         </div>
                     </div>
                     <div className="user-info-details">
@@ -180,11 +269,24 @@ function MyPage() {
                         {willEdit == false ?
                         <div>{userInfo?.email}</div>
                         :
-                            <div><input
+                            <div>
+                                <input
                                 type="text"
                                 value={formData?.email}
                                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                            ></input></div>
+                            ></input>
+                            {/* ✅ Show validation message */}
+                            {existingEmail === true && (
+                                <p style={{ color: "green", fontSize:"12px", margin: "5px 0" }}>
+                                Email available.
+                                </p>
+                            )}
+                            {existingEmail === false && (
+                                <p style={{ color: "red", fontSize:"12px", margin: "5px 0" }}>
+                                This email is already in use.
+                                </p>
+                            )}
+                            </div>
                         }
                         </div>
                     </div>
@@ -230,37 +332,39 @@ function MyPage() {
                                 backgroundColor: 'rgba(169, 211, 195, 1)',
                                 '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
                             }}
-                            onClick={()=> {
-                                fetch("http://localhost:3010/user", {
-                                    method: "PUT",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify(formData),
-                                    })
-                                    .then((res) => res.json())
-                                    .then((data) => {
-                                        if(data.result == "success"){
-                                            console.log("Updated successfully:", data);
-                                            // Refetch the updated user info from backend
-                                            const token = localStorage.getItem("token");
-                                            const decoded = jwtDecode(token);
-                                            fetch(`http://localhost:3010/user/${formData.userId}`)
-                                                .then(res => res.json())
-                                                .then(data => {
-                                                    setUserInfo({
-                                                      ...decoded,
-                                                      ...data.info
-                                                    }); // update userInfo with latest DB values
-                                                    alert("Profile updated!");
-                                                    setWillEdit(false);
-                                                });
-                                        } else {
-                                            alert("there's a problem..");
-                                        }
+                            onClick={handleSave}
+                            // onClick={()=> {
+                            //     fetch("http://localhost:3010/user", {
+                            //         method: "PUT",
+                            //         headers: {
+                            //             "Content-Type": "application/json",
+                            //         },
+                            //         body: JSON.stringify(formData),
+                            //         })
+                            //         .then((res) => res.json())
+                            //         .then((data) => {
+                            //             if(data.result == "success"){
+                            //                 console.log("Updated successfully:", data);
+                            //                 // Refetch the updated user info from backend
+                            //                 const token = localStorage.getItem("token");
+                            //                 const decoded = jwtDecode(token);
+                            //                 fetch(`http://localhost:3010/user/${formData.userId}`)
+                            //                     .then(res => res.json())
+                            //                     .then(data => {
+                            //                         setUserInfo({
+                            //                           ...decoded,
+                            //                           ...data.info
+                            //                         }); // update userInfo with latest DB values
+                            //                         alert("Profile updated!");
+                            //                         setWillEdit(false);
+                            //                     });
+                            //             } else {
+                            //                 alert("there's a problem..");
+                            //             }
                                         
-                                    })
-                            }} >SAVE</Button>
+                            //         })
+                            // }} 
+                            > SAVE</Button>
                         </DialogActions>
                     </div>
                 }

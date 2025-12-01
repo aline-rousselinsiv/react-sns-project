@@ -179,18 +179,23 @@ router.post("/email", async (req, res) =>{
 
 })
 
-router.put("/", async (req, res) =>{
-    let {userName, intro, userId} = req.body;
+router.put("/", async (req, res) => {
+    let {userName, intro, email, userId} = req.body;  
+    
     try {
-        let sql = "UPDATE TBL_USER SET USERNAME = ?, INTRO = ? WHERE USERID = ?";
-        let result = await db.query(sql, [userName, intro, userId]);
+        let sql = "UPDATE TBL_USER SET USERNAME = ?, INTRO = ?, EMAIL = ? WHERE USERID = ?";
+        let result = await db.query(sql, [userName, intro, email, userId]);
+        
         res.json({
-            result : "success"
+            result: "success"
         });
     } catch (error) {
-        console.log(error);
+        console.log("Error updating user:", error);
+        res.status(500).json({
+            result: "error",
+            message: error.message
+        });
     }
-
 })
 
 
