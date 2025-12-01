@@ -34,7 +34,13 @@ function App() {
       
 
       {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box 
+          component="main" 
+          sx={{ 
+            flexGrow: 1, 
+            p: isAuthPage ? 0 : 3  // ✅ No padding for auth pages!
+          }}
+        >
         <Routes>
           {/* Auth pages */}
           <Route path="/login" element={<Login />} />
