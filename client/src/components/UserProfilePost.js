@@ -136,7 +136,13 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                     <div className="my-profile-btn">
                         <DialogActions sx={{ justifyContent: "center" }}>
                             {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
-                            <Button onClick={()=>{
+                            <Button 
+                            variant="contained"
+                            sx={{
+                                backgroundColor: 'rgba(169, 211, 195, 1)',
+                                '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                            }}
+                            onClick={()=>{
                                 setWillEdit(true);
                                 onWillEdit?.(post.id, true);
                             }}>EDIT</Button>
@@ -144,7 +150,13 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                         {!willEdit && (
                             <DialogActions sx={{ justifyContent: "center" }}>
                                 {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
-                                <Button onClick={() => handleDeletePost(post.id)}>DELETE</Button>
+                                <Button
+                                variant="contained"
+                                sx={{
+                                    backgroundColor: 'rgba(169, 211, 195, 1)',
+                                    '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                                }}
+                                onClick={() => handleDeletePost(post.id)}>DELETE</Button>
                             </DialogActions>  
                         )}  
                     </div>

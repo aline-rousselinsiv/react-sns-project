@@ -349,7 +349,12 @@ function Posts ({children, posts: externalPosts, variant}) {
                 </div>
             </div>
         ))
-    : "등록된 피드가 없습니다. 피드를 등록해보세요!"}
+    : 
+    (
+    variant === "myFeed" 
+        ? "등록된 피드가 없습니다. 피드를 등록해보세요!"
+        : "No posts saved at the moment."
+)}
         
             
     </>

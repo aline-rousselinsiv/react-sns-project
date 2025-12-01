@@ -209,7 +209,13 @@ function MyPage() {
                     <div className="edit-btn">
                         <DialogActions sx={{ justifyContent: "center" }}>
                             {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
-                            <Button onClick={()=> {
+                            <Button
+                            variant="contained"
+                            sx={{
+                                backgroundColor: 'rgba(169, 211, 195, 1)',
+                                '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                            }}
+                            onClick={()=> {
                                 setWillEdit(true);
                             }} >EDIT</Button>
                         </DialogActions>
@@ -218,7 +224,13 @@ function MyPage() {
                     <div className="save-btn">
                         <DialogActions sx={{ justifyContent: "center" }}>
                             {/* <Button onClick={() => handlePostComment(commentInput)}>Post</Button> */}
-                            <Button onClick={()=> {
+                            <Button
+                            variant="contained" 
+                            sx={{
+                                backgroundColor: 'rgba(169, 211, 195, 1)',
+                                '&:hover': { backgroundColor: 'rgba(150, 190, 175, 1)' }, // slightly darker on hover
+                            }}
+                            onClick={()=> {
                                 fetch("http://localhost:3010/user", {
                                     method: "PUT",
                                     headers: {
