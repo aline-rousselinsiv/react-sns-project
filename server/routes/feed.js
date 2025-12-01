@@ -37,17 +37,57 @@ router.post('/upload', upload.array('file'), async (req, res) => {
 
 router.get("/:userId", async (req, res) => {
     let {userId} = req.params;
+    const keyword = req.query.keyword || '';  // Get from query string
+    const searchTerm = `%${keyword}%`;
+    let sql, params;
     try {
         // 1️⃣ Get all posts with user info
-        let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
-                "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
-                "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
-                "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
-                "FROM TBL_FEED F " +
-                "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
-                "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
-                "ORDER BY F.CDATETIME DESC";
-        let [feeds] = await db.query(sql,[userId, userId]);
+        // let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
+        //         "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
+        //         "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
+        //         "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+        //         "FROM TBL_FEED F " +
+        //         "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
+        //         "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
+        //         "ORDER BY F.CDATETIME DESC";
+
+        // let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, "
+        //         +"(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, "
+        //         +"(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, "
+        //         +"CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser "
+        //         +"FROM TBL_FEED F "
+        //         +"INNER JOIN TBL_USER U ON F.USERID = U.USERID "
+        //         // +"INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? "
+        //         +"LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? "
+        //         +"WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.content LIKE ?) "
+        //         +"ORDER BY F.CDATETIME DESC";
+
+        if (keyword) {
+            // Search query
+            sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
+                  "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+                  "FROM TBL_FEED F " +
+                  "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
+                  "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
+                  "WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.CONTENT LIKE ?) " +
+                  "ORDER BY F.CDATETIME DESC";
+            params = [userId, userId, searchTerm, searchTerm, searchTerm, searchTerm];
+        } else {
+            // All posts query
+            sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
+                  "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+                  "FROM TBL_FEED F " +
+                  "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
+                  "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
+                  "ORDER BY F.CDATETIME DESC";
+            params = [userId, userId];
+        }
+
+        let [feeds] = await db.query(sql, params);
 
         // 2️⃣ Get all images for these posts
         const feedIds = feeds.map(f => f.id); // extract all post IDs
@@ -93,7 +133,7 @@ router.get("/:userId", async (req, res) => {
 
 router.get("/saved/:userId", async (req, res) => {
     const { userId } = req.params;
-
+    
   try {
     let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
               "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
@@ -105,8 +145,9 @@ router.get("/saved/:userId", async (req, res) => {
               "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +   
               "ORDER BY F.CDATETIME DESC";
 
+
     // pass userId three times for the three placeholders
-    const [feeds] = await db.execute(sql, [userId, userId, userId]);
+    const [feeds] = await db.execute(sql, [userId, userId, userId ]);
 
     // 2) Get images for those feeds (if any)
     const feedIds = feeds.map(f => f.id);

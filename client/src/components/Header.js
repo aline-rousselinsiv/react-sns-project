@@ -10,9 +10,10 @@ import { Link } from "react-router-dom";
 import "../css/header.css";
 import { LogOut, Search  } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
 
 
-function Header (){
+function Header ({ keyword, setKeyword }){
     // const { toggle, darkMode } = useContext(DarkModeContext);
     // const { currentUser } = useContext(AuthContext);
     let navigate = useNavigate();
@@ -25,6 +26,8 @@ function Header (){
         navigate("/login");
     }
 
+
+
     return <>
         <div className="navbar">
             <div className="leftPart">
@@ -34,7 +37,14 @@ function Header (){
             </div>
             <div className="rightPart">
                 <div className="search-section">
-                    <input placeholder="search"></input>
+                    <input 
+                        value={keyword} 
+                        onChange={(e) => {
+                            setKeyword(e.target.value);
+                            console.log("the keyword I entered ==>", e.target.value);
+                        }}  
+                        placeholder="search">
+                    </input>
                     <Search
                         size={20}
                         style={{

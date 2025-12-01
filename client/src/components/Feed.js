@@ -32,7 +32,7 @@ import Posts from './Posts';
 import UserProfilePost from './UserProfilePost';
 
 
-function Feed({ variant, posts }) {
+function Feed({ variant, posts, keyword }) {
   return (
     <>
       {variant !== "profileFeed" && variant !== "savedPosts"? (
@@ -40,12 +40,12 @@ function Feed({ variant, posts }) {
           <WritePost variant="write-post">
             <UserProfilePost variant="writePost" />
           </WritePost>
-          <Posts>
+          <Posts keyword={keyword}>
             <UserProfilePost variant="post" />
           </Posts>
         </>
       ) : (
-        <Posts posts={posts} variant={variant}>
+        <Posts posts={posts} variant={variant} keyword={keyword}>
           {variant === "savedPosts" ? (
             <UserProfilePost variant="post" />  // This will show just avatar + username
           ) : (

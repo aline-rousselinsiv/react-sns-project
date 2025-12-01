@@ -11,17 +11,20 @@ import Signup from './components/Signup';
 import Header from './components/Header';
 import RightBar from './components/RightBar';
 import SavedPosts from './components/SavedPosts';
+import { useState } from 'react';
 
 function App() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+
+  const [keyword, setKeyword] = useState("");
 
   return (
     <Box>
     <CssBaseline />
 
     {/* Header only shows for non-auth pages */}
-    {!isAuthPage && <Header />}
+    {!isAuthPage && <Header keyword={keyword} setKeyword={setKeyword} />}
     
 
     <Box sx={{ display: 'flex' }}>
@@ -37,7 +40,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
 
           {/* App pages */}
-          <Route path="/feed" element={<Feed />} />
+          <Route path="/feed" element={<Feed keyword={keyword} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/savedposts" element={<SavedPosts />} />

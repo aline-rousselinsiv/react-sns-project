@@ -93,3 +93,7 @@
 .save-btn, .like-btn{
   cursor: pointer;
 }
+
+.message {
+  text-align: center;
+}

@@ -25,13 +25,15 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import Comments from './Comments';
 import PostInput from './PostInput';
 
-function Posts ({children, posts: externalPosts, variant}) {
+function Posts ({children, posts: externalPosts, variant, keyword}) {
 
     const token = localStorage.getItem("token");
     const decoded = token ? jwtDecode(token) : null;
     
     let navigate = useNavigate();
     let [posts, setPosts] = useState([]);
+    console.log("The current keyword is : ", keyword);
+    console.log("what I am fetching? >>", posts);
 
     // My version
 
@@ -82,9 +84,15 @@ function Posts ({children, posts: externalPosts, variant}) {
         }
 
         const decoded = jwtDecode(token);
+        const url = `http://localhost:3010/feed/${decoded.userId}${keyword ? `?keyword=${encodeURIComponent(keyword)}` : ''}`;
+
+        console.log("=== FRONTEND FETCH DEBUG ===");
+        console.log("Fetching URL:", url);
+        console.log("Keyword:", keyword);
 
         try {
-            const res = await fetch("http://localhost:3010/feed/" + decoded.userId);
+            const res = await fetch(url);
+            // + "?keyword=" + encodeURIComponent(keyword))
             const data = await res.json();
 
             if (data.result === "success") {
@@ -108,7 +116,7 @@ function Posts ({children, posts: externalPosts, variant}) {
         } catch (err) {
             console.error("Error fetching feed:", err);
         }
-    }, [token, navigate]);
+    }, [token, navigate, keyword]);
 
     useEffect(() => {
         if (externalPosts) {
@@ -116,7 +124,7 @@ function Posts ({children, posts: externalPosts, variant}) {
             return;
         }
     handleGetFeed(); 
-    }, [externalPosts]);
+    }, [externalPosts, keyword]);
 
     // Modal for comments
 
@@ -353,7 +361,7 @@ function Posts ({children, posts: externalPosts, variant}) {
     (
     variant === "myFeed" 
         ? "등록된 피드가 없습니다. 피드를 등록해보세요!"
-        : "No posts saved at the moment."
+        : <div className='message'>"Oops, no posts corresponding !"</div>
 )}
         
             
