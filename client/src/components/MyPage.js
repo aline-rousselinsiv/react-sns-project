@@ -95,7 +95,7 @@ function MyPage() {
         .then(data => {
         if (data.result === "success") {
             console.log(data);
-            setUserInfo(prev => ({ ...prev, IMGPATH: data.newProfilePic }));
+            setUserInfo(prev => ({ ...prev, imgPath: data.newProfilePic }));
             }
         })
         .catch(err => {
@@ -112,7 +112,7 @@ function MyPage() {
       <div className="myProfileContainer">
                 <div className="profile-picture-wrapper">
                     <img 
-                        src={formData.profilePic}
+                        src={userInfo?.imgPath}
                         alt="profile" 
                         className="profile-picture"
                     />

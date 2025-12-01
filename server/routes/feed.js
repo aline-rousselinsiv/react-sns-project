@@ -41,26 +41,6 @@ router.get("/:userId", async (req, res) => {
     const searchTerm = `%${keyword}%`;
     let sql, params;
     try {
-        // 1️⃣ Get all posts with user info
-        // let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
-        //         "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
-        //         "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
-        //         "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
-        //         "FROM TBL_FEED F " +
-        //         "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
-        //         "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
-        //         "ORDER BY F.CDATETIME DESC";
-
-        // let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, "
-        //         +"(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, "
-        //         +"(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, "
-        //         +"CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser "
-        //         +"FROM TBL_FEED F "
-        //         +"INNER JOIN TBL_USER U ON F.USERID = U.USERID "
-        //         // +"INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? "
-        //         +"LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? "
-        //         +"WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.content LIKE ?) "
-        //         +"ORDER BY F.CDATETIME DESC";
 
         if (keyword) {
             // Search query
@@ -133,21 +113,42 @@ router.get("/:userId", async (req, res) => {
 
 router.get("/saved/:userId", async (req, res) => {
     const { userId } = req.params;
+    const keyword = req.query.keyword || '';  // ✅ Add this
+    const searchTerm = `%${keyword}%`; 
     
   try {
-    let sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
-              "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
-              "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
-              "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
-              "FROM TBL_FEED F " +
-              "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
-              "INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? " + 
-              "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +   
-              "ORDER BY F.CDATETIME DESC";
+
+    let sql, params;
+    if (keyword) {
+            // ✅ Saved posts WITH search
+            sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
+                  "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+                  "FROM TBL_FEED F " +
+                  "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
+                  "INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? " + 
+                  "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +
+                  "WHERE (F.TITLE LIKE ? OR F.RESTAURANT LIKE ? OR F.ADDRESS LIKE ? OR F.CONTENT LIKE ?) " +  // ✅ Add WHERE clause
+                  "ORDER BY F.CDATETIME DESC";
+            params = [userId, userId, userId, searchTerm, searchTerm, searchTerm, searchTerm];
+        } else {
+            // Saved posts WITHOUT search (your original query)
+            sql = "SELECT F.*, U.USERID, U.USERNAME, U.IMGPATH AS USER_IMG, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES WHERE POSTID = F.ID) AS likeCount, " +
+                  "(SELECT COUNT(*) FROM TBL_LIKES L WHERE L.POSTID = F.ID AND L.USERID = ?) AS isLikedByUser, " +
+                  "CASE WHEN S.USERID IS NOT NULL THEN 1 ELSE 0 END AS isSavedByUser " +
+                  "FROM TBL_FEED F " +
+                  "INNER JOIN TBL_USER U ON F.USERID = U.USERID " +
+                  "INNER JOIN TBL_SAVED S2 ON S2.POSTID = F.ID AND S2.USERID = ? " + 
+                  "LEFT JOIN TBL_SAVED S ON S.POSTID = F.ID AND S.USERID = ? " +   
+                  "ORDER BY F.CDATETIME DESC";
+            params = [userId, userId, userId];
+        }
 
 
     // pass userId three times for the three placeholders
-    const [feeds] = await db.execute(sql, [userId, userId, userId ]);
+    const [feeds] = await db.execute(sql, params);
 
     // 2) Get images for those feeds (if any)
     const feedIds = feeds.map(f => f.id);

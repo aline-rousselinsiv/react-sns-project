@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 
-function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit, posts }){
+function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit }){
     const [writePost, setWritePost] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);

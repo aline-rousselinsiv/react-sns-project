@@ -5,18 +5,20 @@ import UserProfileBox from "./UserProfileBox";
 
 
 
-function SavedPosts (){
+function SavedPosts ({keyword}){
 
     const token = localStorage.getItem("token");
     const decoded = token ? jwtDecode(token) : null;
     const [savedPosts, setSavedPosts] = useState([]);
+    console.log("whats the keyword ==>", keyword);
 
     useEffect(() => {
         if (!token || !decoded) return;
+        const url = `http://localhost:3010/feed/saved/${decoded.userId}${keyword ? `?keyword=${encodeURIComponent(keyword)}` : ''}`;
 
         const fetchSaved = async () => {
         try {
-            const res = await fetch(`http://localhost:3010/feed/saved/${decoded.userId}`);
+            const res = await fetch(url);
             const data = await res.json();
             if (data.result === "success") {
             setSavedPosts(data.list || []);
@@ -32,7 +34,7 @@ function SavedPosts (){
         };
 
         fetchSaved();
-    }, [token]);
+    }, [token, keyword]);
 
     return (
     <>

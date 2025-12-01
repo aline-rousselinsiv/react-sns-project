@@ -43,7 +43,7 @@ function App() {
           <Route path="/feed" element={<Feed keyword={keyword} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/mypage" element={<MyPage />} />
-          <Route path="/savedposts" element={<SavedPosts />} />
+          <Route path="/savedposts" element={<SavedPosts keyword={keyword}/>} />
         </Routes>
       </Box>
       {/* Right-side bar */}

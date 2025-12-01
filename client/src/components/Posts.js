@@ -86,10 +86,6 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
         const decoded = jwtDecode(token);
         const url = `http://localhost:3010/feed/${decoded.userId}${keyword ? `?keyword=${encodeURIComponent(keyword)}` : ''}`;
 
-        console.log("=== FRONTEND FETCH DEBUG ===");
-        console.log("Fetching URL:", url);
-        console.log("Keyword:", keyword);
-
         try {
             const res = await fetch(url);
             // + "?keyword=" + encodeURIComponent(keyword))
@@ -118,13 +114,53 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
         }
     }, [token, navigate, keyword]);
 
+    // useEffect(() => {
+    //     if (externalPosts) {
+    //         setPosts(externalPosts);   // <-- use posts from parent
+    //         return;
+    //     }
+    // handleGetFeed(); 
+    // }, [externalPosts, keyword]);
+
     useEffect(() => {
+    
+    const fetchPosts = async () => {
         if (externalPosts) {
-            setPosts(externalPosts);   // <-- use posts from parent
-            return;
+            // Add comment counts to external posts (for saved posts page)
+            const postsWithComments = await Promise.all(
+                externalPosts.map(async post => {
+                    try {
+                        const commentRes = await fetch(`http://localhost:3010/comments/${post.id}`);
+                        const commentData = await commentRes.json();
+                        return {
+                            ...post,
+                            isLiked: post.isLikedByUser === 1,      
+                            likeCount: post.likeCount,               
+                            commentCount: commentData.list?.length || 0,
+                            isSaved: post.isSavedByUser === 1 
+                        };
+                    } catch (err) {
+                        console.error("Error fetching comments:", err);
+                        return {
+                            ...post, 
+                            commentCount: 0,
+                            isLiked: post.isLikedByUser === 1,      // ✅ Add this
+                            isSaved: post.isSavedByUser === 1
+                        };
+                    }
+                })
+            );
+            console.log("✅ Posts with comments:", postsWithComments);
+            setPosts(postsWithComments);
+        } else {
+            console.log("🔄 Using handleGetFeed");
+            // Use handleGetFeed for regular feed
+            handleGetFeed();
         }
-    handleGetFeed(); 
-    }, [externalPosts, keyword]);
+    };
+    
+    fetchPosts();
+}, [externalPosts, keyword, handleGetFeed]);
 
     // Modal for comments
 
@@ -244,10 +280,24 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
     };
 
     const [editingPostId, setEditingPostId] = useState(null);
-    return <>
+    // return <>
 
-        {(externalPosts || posts).length > 0 ?
-        (externalPosts || posts)
+    //     {(externalPosts || posts).length > 0 ?
+    //     (externalPosts || posts)
+    //     .filter(post => {
+    //         // For savedPosts variant, show all posts (don't filter by user)
+    //         if (variant === "savedPosts") {
+    //             return true;
+    //         }
+    //         // For other variants, apply the original logic
+    //         return children.props.variant !== "myFeed" || post.USERID === decoded.userId;
+    //     })
+    //     .map((post, index) => (
+            
+    //         <div className="postContainer" key={index}>
+    return <>
+    {posts.length > 0 ?
+        posts
         .filter(post => {
             // For savedPosts variant, show all posts (don't filter by user)
             if (variant === "savedPosts") {
@@ -258,6 +308,7 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
         })
         .map((post, index) => (
             <div className="postContainer" key={index}>
+
                 <div className="postElements">
                     {editingPostId === post.id ? (
                         // If this post is being edited, ONLY show PostInput
@@ -347,7 +398,7 @@ function Posts ({children, posts: externalPosts, variant, keyword}) {
                                 <div className='save-btn' onClick={() => toggleSave(post.id)}>
                                     {post.isSaved 
                                         ? <BookmarkIcon color="black" />  
-                                        : <BookmarkBorderIcon />            
+                                        : <BookmarkBorderIcon />              
                                     }
                                 </div>
                                 )}
