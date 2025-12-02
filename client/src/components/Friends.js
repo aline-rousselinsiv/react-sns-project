@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 function CustomTabPanel(props) {
-let navigate = useNavigate();   
 
 const { children, value, index, sx, ...other } = props;
   return (
@@ -23,10 +22,11 @@ const { children, value, index, sx, ...other } = props;
       {value === index && (
         <Box sx={{ 
           p: 3, 
-          display: 'flex', 
-          justifyContent: 'center',  // centers horizontally
-          alignItems: 'center',       // centers vertically (if you want)
-          ...sx                       // spread any custom sx props
+          display: 'flex',
+          flexWrap: 'wrap',           // This allows wrapping
+          justifyContent: 'center',   // centers the items
+          gap: 2,                     // spacing between items
+          ...sx
         }}>
           {children}
         </Box>
@@ -50,7 +50,9 @@ function a11yProps(index) {
 }
 
 function Friends() {
+    let navigate = useNavigate();   
   const [value, setValue] = React.useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -114,6 +116,17 @@ function Friends() {
     handleGetFollowing();
   }, []);
 
+   // Filter functions
+  const filteredFollowing = followingList?.filter(user =>
+    user.USERNAME.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.USERID.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  const filteredFollowers = followersList?.filter(user =>
+    user.USERNAME.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.USERID.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
   return (
     <>
       <div className="main-container">
@@ -124,9 +137,16 @@ function Friends() {
               <Tab label="Followers" {...a11yProps(1)} />
             </Tabs>
           </Box>
+          <div className='search-bar'>
+            <input 
+                placeholder='Search name'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            ></input>
+            </div>
           <CustomTabPanel value={value} index={0}>
-        {followingList && followingList.length > 0 ? (
-            followingList.map((user, index) => (
+        {filteredFollowing && filteredFollowing.length > 0 ? (
+            filteredFollowing.map((user, index) => (
             <Box
                 key={user.id || index}
                 sx={{
@@ -134,7 +154,14 @@ function Friends() {
                 display: 'flex',
                 alignItems: 'center',
                 marginBottom: '20px',
-                width: 'auto',
+                width: '250px',
+                cursor: 'pointer',
+                '&:hover': {        // Optional: add hover effect
+                backgroundColor: '#f5f5f5'
+                }}}
+                onClick={()=>{
+                    console.log("Clicked user:", user);
+                    navigate("/user/"+user.USERID);
                 }}
             >
                 <Avatar
@@ -152,13 +179,15 @@ function Friends() {
             </Box>
             ))
             ) : (
-                <Typography>No following yet</Typography>
+                <Typography>
+                    {searchQuery ? 'No matching users found' : 'No following yet'}
+                </Typography>
             )}
         </CustomTabPanel>
 
         <CustomTabPanel value={value} index={1}>
-        {followersList && followersList.length > 0 ? (
-            followersList.map((user, index) => (
+        {filteredFollowing && filteredFollowing.length > 0 ? (
+            filteredFollowing.map((user, index) => (
             <Box
                 key={user.id || index}
                 sx={{
@@ -166,7 +195,14 @@ function Friends() {
                 display: 'flex',
                 alignItems: 'center',
                 marginBottom: '20px',
-                width: 'auto',
+                width: '250px',
+                cursor: 'pointer',
+                '&:hover': {        // Optional: add hover effect
+                backgroundColor: '#f5f5f5'
+                }}}
+                onClick={()=>{
+                    console.log("Clicked user:", user);
+                    navigate("/user/"+user.USERID);
                 }}
             >
                 <Avatar
@@ -184,7 +220,9 @@ function Friends() {
             </Box>
             ))
             ) : (
-                <Typography>No followers yet</Typography>
+                <Typography>
+                    {searchQuery ? 'No matching users found' : 'No followers yet'}
+                </Typography>
             )}
         </CustomTabPanel>
         </Box>

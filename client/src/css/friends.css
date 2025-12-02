@@ -15,3 +15,17 @@
     overflow-y: hidden; /*scroll if content overflows */
     z-index: 100; /* make sure it floats above other content */
 }
+
+.search-bar {
+    display: flex;
+    justify-content: center;
+}
+
+.search-bar input{
+    margin-top: 15px;
+    width: 350px;
+    border: 1px solid grey;
+    height: 35px;
+    border-radius: 8px;
+    padding-left: 10px;
+}
