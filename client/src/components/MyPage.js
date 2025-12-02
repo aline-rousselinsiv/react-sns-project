@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Feed from './Feed';
+import defaultAvatar from '../images/default-avatar.jpg'
 
 function MyPage() {
     
@@ -209,7 +210,7 @@ function MyPage() {
       <div className="myProfileContainer">
                 <div className="profile-picture-wrapper">
                     <img 
-                        src={userInfo?.imgPath}
+                        src={userInfo?.imgPath === 'null' ? defaultAvatar : (userInfo?.imgPath || defaultAvatar)}
                         alt="profile" 
                         className="profile-picture"
                     />

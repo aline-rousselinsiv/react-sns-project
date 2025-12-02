@@ -424,7 +424,7 @@
         (
         variant === "myFeed" 
             ? "등록된 피드가 없습니다. 피드를 등록해보세요!"
-            : <div className='message'>"Oops, no posts corresponding !"</div>
+            : <div className='message'>No posts yet !</div>
     )}
             
                 
