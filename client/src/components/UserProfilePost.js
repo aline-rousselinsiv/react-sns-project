@@ -18,6 +18,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
     let commentRef = useRef();
     const [localComments, setLocalComments] = useState("");
     let [willEdit, setWillEdit] = useState(false);
+    console.log("show me what is it in conmments ==>", comment);
 
     function handleUserInfo(){
         if(token){
@@ -110,7 +111,11 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                 <>
                 
                 <Avatar
-                    src={variant == "post" ? post?.USER_IMG : userInfo?.imgPath}
+                    src={
+                        variant === "post" ? post?.USER_IMG 
+                        : variant === "comment" ? comment?.imgPath // Commenter's avatar
+                        : userInfo?.imgPath  // Logged-in user (for write-comment)
+                    }
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
