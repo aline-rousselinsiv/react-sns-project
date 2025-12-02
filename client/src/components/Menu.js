@@ -51,7 +51,7 @@ function Menu() {
           boxSizing: 'border-box',
           top: '120px',
           position: 'sticky', // <--- make it sticky
-          height: 'calc(100vh - 180px)' // keep it within viewport
+          height: '800px' // keep it within viewport
         },
       }}
     >

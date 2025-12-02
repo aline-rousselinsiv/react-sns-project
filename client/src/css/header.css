@@ -44,6 +44,7 @@
     color: grey;
     padding-right: 35px;
     padding-left: 10px;
+    font-family: 'Inter', sans-serif;
 }
 
 .logout-btn {

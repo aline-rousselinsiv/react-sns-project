@@ -4,6 +4,10 @@
   font-family: 'Inter', sans-serif;
 }
 
+input, textarea, select, button {
+  font-family: inherit;
+}
+
 .App {
   text-align: center;
 }

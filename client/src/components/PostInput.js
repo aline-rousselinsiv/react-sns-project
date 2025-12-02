@@ -394,8 +394,8 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                         borderBottom : "1px grey solid",
                         textAlign : "left",
                         // justifyContent : "center",
-                        marginTop : "40px",
-                        marginBottom : "10px",
+                        marginTop : "25px",
+                        marginBottom : "30px",
                         color : "grey",
                         display: "flex",
                         flexDirection : "row",
@@ -406,7 +406,7 @@ function PostInput({variant, post, onCancel, refreshPosts}){
                     }}
                 >
                     <div style={{}}>Price</div>
-                    <div style={{ display: "flex", gap: "5px", cursor: "pointer" }}>
+                    <div style={{ display: "flex", gap: "5px", cursor: "pointer", marginBottom:'10px'}}>
                         {[1, 2, 3, 4, 5].map((coin) => (
                             <CircleDollarSign
                                 key={coin}

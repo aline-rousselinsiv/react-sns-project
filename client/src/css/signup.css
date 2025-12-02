@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -43,6 +45,7 @@ html, body {
       background-size: cover;
       padding: 50px;
       display: flex;
+      align-items: center;
       flex-direction: column;
       gap: 30px;
       color: white;
@@ -65,12 +68,9 @@ html, body {
         font-weight: bold;
         cursor: pointer;
         border-radius: 8px;
-        position: absolute;
-        bottom:73px;
-        left: 85px;
+        margin-top: 45px;
       }
     }
-
     .right {
       flex: 1;
       padding: 50px;
@@ -111,4 +111,14 @@ html, body {
       }
     }
   }
+}
+
+p{
+  background-color: rgba(255, 255, 255, 0.5);  /* White at 50% opacity */
+  width: 370px;
+  height: 230px;
+  color:black;
+  padding: 30px;
+  font-family: 'Lexend', sans-serif;
+  font-weight: 400;
 }

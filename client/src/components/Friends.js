@@ -213,7 +213,20 @@ function Friends() {
       
         <Box sx={{ width: '100%' }} >
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered sx={{ '& .MuiTab-root': { margin: '0 50px' } }}>
+            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered
+              sx={{ 
+                '& .MuiTab-root': { 
+                  margin: '0 50px',
+                  color: 'grey',  // Default color
+                  '&.Mui-selected': {
+                    color: 'rgba(88, 168, 139, 1)',  // Your brand color when selected
+                  }
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: 'rgba(169, 211, 195, 1)',  // Bottom indicator line
+                }
+              }}
+              >
               <Tab label="Following" {...a11yProps(0)} />
               <Tab label="Followers" {...a11yProps(1)} />
             </Tabs>

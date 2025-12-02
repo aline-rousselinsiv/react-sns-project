@@ -41,13 +41,12 @@ function Login() {
         <div className="left">
           <h1>FOODIE</h1>
           <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero cum,
-            alias totam numquam ipsa exercitationem dignissimos, error nam,
-            consequatur.
+            <div>FOODIE is a platform for all foodies that love to discover unknown or hidden restaurants, bars, cafes in their neighborhood. </div>
+            <div>Whether you live in a big city or in a little peaceful village, join FOODIE and share with other users all your findings !</div>
           </p>
-          <span>Don't you have an account?</span>
+          <div>Don't you have an account?</div>
           <Link to="/signup">
-            <button>SIGN UP</button>
+            <button style={{fontFamily : "inherit"}}>SIGN UP</button>
           </Link>
         </div>
         <div className="right">
@@ -60,7 +59,13 @@ function Login() {
           <form onSubmit={handleLogin}>  
             <Box
                 component="div"
-                sx={{ '& > :not(style)': { m: 1, width: '30ch' } }}
+                sx={{ 
+                  '& > :not(style)': { m: 1, width: '30ch' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',  // Centers the TextFields horizontally
+                  justifyContent: 'center'
+                }}
                 noValidate
                 autoComplete="off"
               >
@@ -74,8 +79,10 @@ function Login() {
                 variant="standard"
               />
             </Box>
+            <div></div>
             <button 
               type="submit"
+              style={{fontFamily : "inherit", marginTop:'5px'}}
               >LOGIN</button>
           </form>
         </div>
