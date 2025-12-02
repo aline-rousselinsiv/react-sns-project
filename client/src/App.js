@@ -13,6 +13,7 @@ import RightBar from './components/RightBar';
 import SavedPosts from './components/SavedPosts';
 import { useState } from 'react';
 import UserProfile from './components/UserProfile';
+import Friends from './components/Friends';
 
 function App() {
   const location = useLocation();
@@ -48,7 +49,7 @@ function App() {
 
           {/* App pages */}
           <Route path="/feed" element={<Feed keyword={keyword} />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/friends" element={<Friends />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/savedposts" element={<SavedPosts keyword={keyword}/>} />
           <Route path="/user/:userId" element={<UserProfile />} />

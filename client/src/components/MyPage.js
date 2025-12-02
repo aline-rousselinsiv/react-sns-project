@@ -259,7 +259,7 @@ function MyPage() {
                     </div>
                     <div className="user-info-details">
                         <div className="bold">UserName</div>
-                        <div>
+                        <div> 
                         <div>@{userInfo?.userId}</div>
                         </div>
                     </div>

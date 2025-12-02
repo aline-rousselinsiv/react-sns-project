@@ -1,0 +1,17 @@
+
+
+.main-container{
+    width: 900px;
+    min-height: 500px;
+    margin-left: 200px;
+    margin-top: 30px;
+    margin-bottom: 50px;
+    /* top: 200px; distance from top of the page */
+    /* left: 200px; distance from right side of the page */
+    background-color: #fff;
+    border-radius: 10px; /* makes it look like a card */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* floating effect */
+    padding: 20px;
+    overflow-y: hidden; /*scroll if content overflows */
+    z-index: 100; /* make sure it floats above other content */
+}
