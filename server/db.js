@@ -1,9 +1,10 @@
 const mysql = require('mysql2'); // need to import the npm mysql2
+require("dotenv").config();
 
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
-    password: 'test1234',
+    password: process.env.alinpw,
     database: 'mysqldb' // db 이름
 });
 

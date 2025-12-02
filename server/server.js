@@ -7,6 +7,8 @@ const feedRouter = require("./routes/feed")
 const commentsRouter = require("./routes/comments")
 const path = require('path');
 
+require("dotenv").config();
+
 app.use(cors({
     // origin : ["http://192.168.30.39:5501"],
     origin : "*",
