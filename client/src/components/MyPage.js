@@ -207,7 +207,7 @@ function MyPage() {
     <>
       {/* <WritePost variant="myProfile" userInfo={userInfo} setUserInfo={setUserInfo}>
       </WritePost> */}
-      <div className="myProfileContainer">
+      <div className="myProfileContainer" style={{height : '530px'}}>
                 <div className="profile-picture-wrapper">
                     <img 
                         src={userInfo?.imgPath === 'null' ? defaultAvatar : (userInfo?.imgPath || defaultAvatar)}

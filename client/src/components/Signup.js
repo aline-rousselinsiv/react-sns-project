@@ -197,7 +197,7 @@ function Signup() {
       <div className="card">
         <div className="left">
           <h1>FOODIE</h1>
-          <p>
+          <p className='site-intro'>
             <div>FOODIE is a platform for all foodies that love to discover unknown or hidden restaurants, bars, cafes in their neighborhood. </div>
             <div>Whether you live in a big city or in a little peaceful village, join FOODIE and share with other users all your findings !</div>
           </p>
@@ -220,12 +220,12 @@ function Signup() {
             }}>
               <TextField inputRef={idRef} id="standard-basic" label="username" variant="standard" margin="dense" onChange={(e) => setUsername(e.target.value)}/>
                 {availableId === true && (
-                  <p style={{ color: "green", fontSize:"12px"}}>
+                  <p className='alert-msg' style={{ color: "green", fontSize:"12px"}}>
                     Username available.
                   </p>
                 )}
                 {availableId === false && (
-                  <p style={{ color: "red", fontSize:"12px"}}>
+                  <p className='alert-msg' style={{ color: "red", fontSize:"12px"}}>
                     This username is already used.
                   </p>
                 )}
@@ -251,13 +251,13 @@ function Signup() {
                 onChange={handlePasswordRegex}
               />
               {passwordValid === false && (
-              <p style={{ color: "red", fontSize:"10px" }}>
+              <p className='alert-msg' style={{ color: "red", fontSize:"10px" }}>
                 Password must be at least 6 characters long and contain 1 letter, 1 number, and 1 special character.
               </p>
               )}
 
               {passwordValid === true && (
-                <p style={{ color: "green", fontSize:"12px" }}>
+                <p className='alert-msg' style={{ color: "green", fontSize:"12px" }}>
                   Password meets all requirements.
                 </p>
               )}

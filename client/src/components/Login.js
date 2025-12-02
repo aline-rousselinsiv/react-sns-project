@@ -40,7 +40,7 @@ function Login() {
       <div className="card">
         <div className="left">
           <h1>FOODIE</h1>
-          <p>
+          <p className='site-intro'>
             <div>FOODIE is a platform for all foodies that love to discover unknown or hidden restaurants, bars, cafes in their neighborhood. </div>
             <div>Whether you live in a big city or in a little peaceful village, join FOODIE and share with other users all your findings !</div>
           </p>
