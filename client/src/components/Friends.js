@@ -186,8 +186,8 @@ function Friends() {
         </CustomTabPanel>
 
         <CustomTabPanel value={value} index={1}>
-        {filteredFollowing && filteredFollowing.length > 0 ? (
-            filteredFollowing.map((user, index) => (
+        {filteredFollowers && filteredFollowers.length > 0 ? (
+            filteredFollowers.map((user, index) => (
             <Box
                 key={user.id || index}
                 sx={{

@@ -16,7 +16,7 @@ function Comments({ onSubmitComment, postId }){
             .then(res => res.json())
             .then(data => {
                 if(data.result == "success"){
-                    setCommentsList(data.list);
+                    setCommentsList([...data.list]);
                     console.log("list of comments == > ", data.list);
                 }
             })
@@ -25,6 +25,13 @@ function Comments({ onSubmitComment, postId }){
         if(postId) handleGetComments();
     }, [postId]);
 
+    function handleSubmitComment(commentData) {
+        onSubmitComment?.(commentData, postId);
+        // Wait a bit for the backend to save, then refresh
+        setTimeout(() => {
+            handleGetComments();
+        }, 500);
+    }
     function handleDeleteComment(commentId){
         if(!window.confirm("Are you sure you want to delete this comment?")){
             return; 
@@ -35,8 +42,10 @@ function Comments({ onSubmitComment, postId }){
             .then(res => res.json())
             .then(data => {
                 if(data.result == "success"){
+                    setCommentsList(prevComments => 
+                        prevComments.filter(comment => comment.COMMENT_ID !== commentId)
+                    );
                     alert("Comment deleted!");
-                    handleGetComments();
                 } else { 
                     alert("error");
                 }
@@ -49,7 +58,7 @@ function Comments({ onSubmitComment, postId }){
         </div>
             <div className="comment-content">
                 {commentsList.length > 0 ? commentsList.map((comment, index) => (
-                    <div key={index} className="comment-row" style={{ display: 'flex', alignItems: 'center' }}>
+                    <div key={comment.COMMENT_ID} className="comment-row" style={{ display: 'flex', alignItems: 'center' }}>
                         <UserProfilePost variant="comment" comment={comment} />
                         {decoded && comment.USER_ID === decoded.userId && (
                             <div className="delete-btn" style={{ marginLeft: 'auto' }}>
@@ -64,7 +73,8 @@ function Comments({ onSubmitComment, postId }){
         <div className="comment-input">
             <UserProfilePost 
                 variant="write-comment"
-                onSubmitComment={(content) => onSubmitComment(content, postId)}
+                // onSubmitComment={(content) => onSubmitComment(content, postId)}
+                onSubmitComment={handleSubmitComment}
             ></UserProfilePost>
         </div>
     </>
