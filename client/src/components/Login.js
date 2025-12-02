@@ -47,7 +47,7 @@ function Login() {
           </p>
           <span>Don't you have an account?</span>
           <Link to="/signup">
-            <button>Sign up</button>
+            <button>SIGN UP</button>
           </Link>
         </div>
         <div className="right">
@@ -57,24 +57,26 @@ function Login() {
             <input inputRef="pwdRef" type="password" placeholder="Password" />
             <button onClick={handleLogin}>Login</button>
           </form> */}
-          <Box
-              component="form"
-              sx={{ '& > :not(style)': { m: 1, width: '30ch' } }}
-              noValidate
-              autoComplete="off"
-            >
-              <TextField inputRef={idRef} id="standard-basic" label="username" variant="standard" />
-              <TextField
-              inputRef={pwdRef}
-              id="standard-password-input"
-              label="password"
-              type="password"
-              autoComplete="current-password"
-              variant="standard"
-            />
-          </Box>
           <form onSubmit={handleLogin}>  
-            <button type="submit">Login</button>
+            <Box
+                component="div"
+                sx={{ '& > :not(style)': { m: 1, width: '30ch' } }}
+                noValidate
+                autoComplete="off"
+              >
+                <TextField inputRef={idRef} id="standard-basic" label="username" variant="standard" />
+                <TextField
+                inputRef={pwdRef}
+                id="standard-password-input"
+                label="password"
+                type="password"
+                autoComplete="current-password"
+                variant="standard"
+              />
+            </Box>
+            <button 
+              type="submit"
+              >LOGIN</button>
           </form>
         </div>
       </div>
