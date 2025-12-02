@@ -14,6 +14,7 @@ import SavedPosts from './components/SavedPosts';
 import { useState } from 'react';
 import UserProfile from './components/UserProfile';
 import Friends from './components/Friends';
+import Message from './components/Message';
 
 function App() {
   const location = useLocation();
@@ -53,6 +54,7 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/savedposts" element={<SavedPosts keyword={keyword}/>} />
           <Route path="/user/:userId" element={<UserProfile />} />
+          <Route path="/messages" element={<Message />} />
         </Routes>
       </Box>
       {/* Right-side bar */}

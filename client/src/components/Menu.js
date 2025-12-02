@@ -61,7 +61,9 @@ function Menu() {
         <ListItem button component={NavLink} to="/feed" sx={navItemStyles}>
           <ListItemText primary="FEED" />
         </ListItem>
-        <ListItem button component={NavLink} to="" sx={navItemStyles}>
+        <ListItem button component={NavLink} to="/messages" sx={navItemStyles} onClick={()=>{
+          alert("🚧Oops. Message page coming very soon !🚧");
+        }}>
           <ListItemText primary="MESSAGES" />
         </ListItem>
         <ListItem button component={NavLink} to="/friends" sx={navItemStyles}>

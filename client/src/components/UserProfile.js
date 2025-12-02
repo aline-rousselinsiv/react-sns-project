@@ -125,6 +125,9 @@ function UserProfile() {
                         {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
                     </Button>
                     <Button
+                        onClick={()=>{
+                            alert(" 🚧 Oops ! Message function coming up very soon ! 🚧");
+                        }}
                         variant="contained"
                         sx={{
                             backgroundColor: 'rgba(169, 211, 195, 1)',
