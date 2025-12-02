@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 
-function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit }){
+function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit, isFollowing, onFollowToggle }){
     const [writePost, setWritePost] = useState(false);
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
@@ -78,9 +78,6 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                 })
     }
 
-
-    
-
     return <>
         <>
             <Box
@@ -117,7 +114,18 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                     sx={{ width: 50, height: 50, mr: 2 }} // margin-right between avatar and text
                 />
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                    <Typography 
+                        variant="subtitle1" 
+                        sx={{ 
+                            fontWeight: 'bold',
+                            cursor: variant === "post" ? 'pointer' : 'default',
+                            '&:hover': variant === "post" ? { textDecoration: 'underline' } : {}
+                        }}
+                        onClick={() => {
+                            if (variant === "post" && post?.USERID) {
+                                navigate(`/user/${post.USERID}`); // ✅ Navigate to user profile
+                            }
+                        }}>
                         {variant == "post" ? post?.USERNAME 
                         : variant == "comment" ? comment?.userName
                         : userInfo?.userName
@@ -132,6 +140,22 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                         }
                     </Typography>
                 </Box> 
+                {variant === "post" && post?.USERID !== decoded.userId && (
+                    <Button
+                        variant="contained"
+                        size="small"
+                        sx={{
+                            ml: 2,  // ✅ Changed from 'auto' to 2 (small margin)
+                            backgroundColor: isFollowing ? 'grey' : 'rgba(169, 211, 195, 1)',
+                            '&:hover': { 
+                                backgroundColor: isFollowing ? '#666' : 'rgba(150, 190, 175, 1)' 
+                            },
+                        }}
+                        onClick={onFollowToggle}
+                    >
+                        {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
+                    </Button>
+                )}
                 {variant === "myFeed" && (
                     <div className="my-profile-btn">
                         <DialogActions sx={{ justifyContent: "center" }}>

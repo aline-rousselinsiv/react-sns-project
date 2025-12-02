@@ -1,3 +1,24 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
 .login {
   height: 100vh;
   background-color: rgba(169, 211, 195, 1);
@@ -7,14 +28,15 @@
   width: 100%;
 
   .card {
-    width: 50%;
+    width:55%;
     display: flex;
     background-color: white;
     border-radius: 10px;
-    min-height: 600px;
+    min-height: 700px;
     overflow: hidden;
 
     .left {
+      position: relative;
       flex: 1;
       background:
         url("../images/loginImg.avif")
@@ -36,7 +58,7 @@
       }
       
       button {
-        width: 100%;
+        width: 300px;
         padding: 10px;
         border: none;
         background-color: white;
@@ -44,6 +66,9 @@
         font-weight: bold;
         cursor: pointer;
         border-radius: 8px;
+        position: absolute;
+        bottom:145px;
+        left: 85px;
       }
     }
 
@@ -54,9 +79,11 @@
       flex-direction: column;
       gap: 50px;
       justify-content: center;
+      align-items: center;
 
       h1 {
       color: #555;
+      align-content: flex-start;
       }
       
       form {
@@ -71,7 +98,7 @@
         }
         
         button {
-          width: 100%;
+          width: 300px;
           padding: 10px;
           border: none;
           background-color: rgba(88, 168, 139, 1);
@@ -82,5 +109,6 @@
         }
       }
     }
+    
   }
 }

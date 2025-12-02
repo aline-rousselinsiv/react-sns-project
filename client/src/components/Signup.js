@@ -210,7 +210,15 @@ function Signup() {
         <div className="right">
           <h1>Sign up</h1>
           <form onSubmit={handleJoin}>
-            <Box sx={{ '& > :not(style)': { m: 0 } }}>
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '5px',  // ✅ Control spacing here instead of CSS
+              '& .MuiTextField-root': { 
+                marginTop: 0,
+                marginBottom: 0 
+              }
+            }}>
               <TextField inputRef={idRef} id="standard-basic" label="username" variant="standard" margin="dense" onChange={(e) => setUsername(e.target.value)}/>
                 {availableId === true && (
                   <p style={{ color: "green", fontSize:"12px"}}>

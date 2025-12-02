@@ -198,5 +198,120 @@ router.put("/", async (req, res) => {
     }
 })
 
+router.get("/follow/check", async (req, res) => {
+    const { follower, following } = req.query;
+    
+    try {
+        const sql = "SELECT * FROM TBL_FOLLOW WHERE FOLLOWER_ID = ? AND FOLLOWING_ID = ?";
+        const [result] = await db.query(sql, [follower, following]);
+        
+        res.json({
+            result: "success",
+            isFollowing: result.length > 0
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error", message: "Server error" });
+    }
+});
+
+router.post("/follow", async (req, res) => {
+    const { followerId, followingId } = req.body;
+    
+    if (!followerId || !followingId) {
+        return res.status(400).json({ result: "error", message: "Missing required fields" });
+    }
+    
+    if (followerId === followingId) {
+        return res.status(400).json({ result: "error", message: "Cannot follow yourself" });
+    }
+    
+    try {
+        // Check if already following
+        const checkSql = "SELECT * FROM TBL_FOLLOW WHERE FOLLOWER_ID = ? AND FOLLOWING_ID = ?";
+        const [existing] = await db.query(checkSql, [followerId, followingId]);
+        
+        if (existing.length > 0) {
+            // UNFOLLOW: Delete the relationship
+            await db.query("DELETE FROM TBL_FOLLOW WHERE FOLLOWER_ID = ? AND FOLLOWING_ID = ?", 
+                [followerId, followingId]);
+            
+            // Decrement counts
+            await db.query("UPDATE TBL_USER SET FOLLOWING = FOLLOWING - 1 WHERE USERID = ?", [followerId]);
+            await db.query("UPDATE TBL_USER SET FOLLOWER = FOLLOWER - 1 WHERE USERID = ?", [followingId]);
+            
+            res.json({
+                result: "success",
+                isFollowing: false,
+                message: "Unfollowed successfully"
+            });
+        } else {
+            // FOLLOW: Insert the relationship
+            await db.query("INSERT INTO TBL_FOLLOW (FOLLOWER_ID, FOLLOWING_ID, CREATED_AT) VALUES (?, ?, NOW())", 
+                [followerId, followingId]);
+            
+            // Increment counts
+            await db.query("UPDATE TBL_USER SET FOLLOWING = FOLLOWING + 1 WHERE USERID = ?", [followerId]);
+            await db.query("UPDATE TBL_USER SET FOLLOWER = FOLLOWER + 1 WHERE USERID = ?", [followingId]);
+            
+            res.json({
+                result: "success",
+                isFollowing: true,
+                message: "Followed successfully"
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error", message: "Server error" });
+    }
+});
+
+// Get followers list (bonus endpoint if you need it later)
+router.get("/followers/:userId", async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        const sql = `
+            SELECT u.USERID, u.USERNAME, u.IMGPATH, u.INTRO
+            FROM TBL_USER u
+            JOIN TBL_FOLLOW f ON u.USERID = f.FOLLOWER_ID
+            WHERE f.FOLLOWING_ID = ?
+            ORDER BY f.CREATED_AT DESC
+        `;
+        const [list] = await db.query(sql, [userId]);
+        
+        res.json({
+            result: "success",
+            followers: list
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error", message: "Server error" });
+    }
+});
+
+router.get("/following/:userId", async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        const sql = `
+            SELECT u.USERID, u.USERNAME, u.IMGPATH, u.INTRO
+            FROM TBL_USER u
+            JOIN TBL_FOLLOW f ON u.USERID = f.FOLLOWING_ID
+            WHERE f.FOLLOWER_ID = ?
+            ORDER BY f.CREATED_AT DESC
+        `;
+        const [list] = await db.query(sql, [userId]);
+        
+        res.json({
+            result: "success",
+            following: list
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error", message: "Server error" });
+    }
+});
+
 
 module.exports = router;

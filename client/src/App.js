@@ -12,6 +12,7 @@ import Header from './components/Header';
 import RightBar from './components/RightBar';
 import SavedPosts from './components/SavedPosts';
 import { useState } from 'react';
+import UserProfile from './components/UserProfile';
 
 function App() {
   const location = useLocation();
@@ -33,7 +34,13 @@ function App() {
       
 
       {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box 
+          component="main" 
+          sx={{ 
+            flexGrow: 1, 
+            p: isAuthPage ? 0 : 3  // ✅ No padding for auth pages!
+          }}
+        >
         <Routes>
           {/* Auth pages */}
           <Route path="/login" element={<Login />} />
@@ -44,6 +51,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/savedposts" element={<SavedPosts keyword={keyword}/>} />
+          <Route path="/user/:userId" element={<UserProfile />} />
         </Routes>
       </Box>
       {/* Right-side bar */}
