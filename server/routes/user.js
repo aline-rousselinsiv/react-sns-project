@@ -239,6 +239,12 @@ router.post("/follow", async (req, res) => {
             // Decrement counts
             await db.query("UPDATE TBL_USER SET FOLLOWING = FOLLOWING - 1 WHERE USERID = ?", [followerId]);
             await db.query("UPDATE TBL_USER SET FOLLOWER = FOLLOWER - 1 WHERE USERID = ?", [followingId]);
+
+            // Delete notification when unfollowing
+            await db.query(
+                "DELETE FROM TBL_NOTIFICATION WHERE USER_ID = ? AND FOLLOWER_ID = ? AND TYPE = 'follow'",
+                [followingId, followerId]
+            );
             
             res.json({
                 result: "success",
@@ -253,6 +259,12 @@ router.post("/follow", async (req, res) => {
             // Increment counts
             await db.query("UPDATE TBL_USER SET FOLLOWING = FOLLOWING + 1 WHERE USERID = ?", [followerId]);
             await db.query("UPDATE TBL_USER SET FOLLOWER = FOLLOWER + 1 WHERE USERID = ?", [followingId]);
+
+             // Create notification
+            await db.query(
+                "INSERT INTO TBL_NOTIFICATION (USER_ID, FOLLOWER_ID, TYPE, IS_READ, CREATED_AT) VALUES (?, ?, 'follow', FALSE, NOW())",
+                [followingId, followerId]
+            );
             
             res.json({
                 result: "success",
@@ -310,6 +322,64 @@ router.get("/following/:userId", async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ result: "error", message: "Server error" });
+    }
+});
+
+router.get("/notifications/unread/:userId", async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        const [result] = await db.query(
+            "SELECT COUNT(*) as count FROM TBL_NOTIFICATION WHERE USER_ID = ? AND IS_READ = FALSE",
+            [userId]
+        );
+        
+        res.json({
+            result: "success",
+            unreadCount: result[0].count
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error" });
+    }
+});
+
+router.get("/notifications/:userId", async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        const [notifications] = await db.query(`
+            SELECT n.*, u.USERNAME, u.IMGPATH 
+            FROM TBL_NOTIFICATION n
+            JOIN TBL_USER u ON n.FOLLOWER_ID = u.USERID
+            WHERE n.USER_ID = ?
+            ORDER BY n.CREATED_AT DESC
+            LIMIT 20
+        `, [userId]);
+        
+        res.json({
+            result: "success",
+            notifications: notifications
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error" });
+    }
+}); 
+
+router.put("/notifications/read/:userId", async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        await db.query(
+            "UPDATE TBL_NOTIFICATION SET IS_READ = TRUE WHERE USER_ID = ?",
+            [userId]
+        );
+        
+        res.json({ result: "success" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ result: "error" });
     }
 });
 

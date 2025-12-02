@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Drawer, List, ListItem, ListItemText, Typography, Toolbar, ListItemIcon } from '@mui/material';
-import { Home, Add, AccountCircle } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
 import UserProfileBox from './UserProfileBox';
 import { NavLink } from "react-router-dom";
+import { Badge } from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
+import PeopleIcon from '@mui/icons-material/People';
 
 function Menu() {
+  const [unreadCount, setUnreadCount] = useState(0);
+  const token = localStorage.getItem("token");
+  const decoded = token ? jwtDecode(token) : null;
   const navItemStyles = {
     "&.active .MuiListItemText-primary": {
       color: "rgba(88, 168, 139, 1)",
@@ -15,6 +19,25 @@ function Menu() {
       color: "grey",
     },
   };
+  useEffect(() => {
+        if (decoded) {
+            fetchUnreadCount();
+            // Poll for new notifications every 30 seconds
+            const interval = setInterval(fetchUnreadCount, 30000);
+            return () => clearInterval(interval);
+        }
+    }, []);
+
+    function fetchUnreadCount() {
+        fetch(`http://localhost:3010/user/notifications/unread/${decoded.userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === "success") {
+                    setUnreadCount(data.unreadCount);
+                }
+            });
+    }
+
   return (
     <>
     
@@ -42,7 +65,18 @@ function Menu() {
           <ListItemText primary="MESSAGES" />
         </ListItem>
         <ListItem button component={NavLink} to="/friends" sx={navItemStyles}>
-          <ListItemText primary="FRIENDS" />
+          <Badge 
+            badgeContent={unreadCount} 
+            color="error"
+            sx={{ 
+              '& .MuiBadge-badge': {
+                right: -10,  // Adjust position closer
+                top: 5,      // Adjust vertical position
+              }
+            }}
+          >
+            <ListItemText primary="FRIENDS" />
+          </Badge>
         </ListItem>
         <ListItem button component={NavLink} to="/mypage" sx={navItemStyles}>
           <ListItemText primary="MY PROFILE" />

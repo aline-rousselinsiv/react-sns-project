@@ -7,6 +7,9 @@ import "../css/friends.css";
 import {jwtDecode} from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+
+
 
 function CustomTabPanel(props) {
 
@@ -53,7 +56,7 @@ function Friends() {
     let navigate = useNavigate();   
   const [value, setValue] = React.useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -127,9 +130,87 @@ function Friends() {
     user.USERID.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
+  // notif function
+
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(true);
+
+  useEffect(() => {
+        if (decoded) {
+            fetchNotifications();
+            // Mark as read when visiting the page
+            markAsRead();
+        }
+    }, []);
+
+    function fetchNotifications() {
+        fetch(`http://localhost:3010/user/notifications/${decoded.userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === "success") {
+                    setNotifications(data.notifications);
+                }
+            });
+    }
+
+    function markAsRead() {
+        fetch(`http://localhost:3010/user/notifications/read/${decoded.userId}`, {
+            method: "PUT"
+        });
+    }
+
   return (
     <>
       <div className="main-container">
+        {/* Show notifications section if there are unread ones */}
+        {showNotifications && notifications.filter(n => !n.IS_READ).length > 0 && (
+        <Box sx={{ 
+            p: 1.5, 
+            bgcolor: 'rgba(169, 211, 195, 0.15)',  // Light version of your color
+            borderLeft: '3px solid rgba(169, 211, 195, 1)',  // Accent border
+            borderRadius: 1, 
+            mb: 2,
+            maxWidth: '800px',  // Limit width
+            mx: 'auto'  // Center it
+          }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: 'rgba(169, 211, 195, 1)', fontWeight: 'bold' }}>
+                New Followers
+            </Typography>
+            {notifications
+                .filter(n => !n.IS_READ)
+                .map(notification => (
+                    <Box 
+                        key={notification.NOTIFICATION_ID} 
+                        sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            mt: 0.5,
+                            py: 0.5  // Smaller vertical padding
+                        }}
+                    >
+                        <Avatar 
+                            src={notification.IMGPATH} 
+                            sx={{ width: 32, height: 32, mr: 1.5 }}  // Smaller avatar
+                        />
+                        <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                            <strong>{notification.USERNAME}</strong> started following you
+                        </Typography>
+                        <Typography 
+                            variant="caption" 
+                            sx={{ 
+                                ml: 'auto', 
+                                color: 'grey',
+                                fontSize: '0.75rem'  // Smaller timestamp
+                            }}
+                        >
+                            {formatDistanceToNow(new Date(notification.CREATED_AT), { addSuffix: true })}
+                        </Typography>
+                    </Box>
+                    ))
+                }
+        </Box>
+        )}
+      
         <Box sx={{ width: '100%' }} >
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered sx={{ '& .MuiTab-root': { margin: '0 50px' } }}>
