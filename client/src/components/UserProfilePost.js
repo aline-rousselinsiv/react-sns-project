@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
+import { formatDistanceToNow } from 'date-fns';
 
 function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts, onWillEdit, isFollowing, onFollowToggle }){
     const [writePost, setWritePost] = useState(false);
@@ -19,6 +20,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
     const [localComments, setLocalComments] = useState("");
     let [willEdit, setWillEdit] = useState(false);
     console.log("show me what is it in conmments ==>", comment);
+    console.log("show me what is it in post ==>", post);
 
     function handleUserInfo(){
         if(token){
@@ -88,6 +90,7 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                 alignItems: 'center',      // vertically center avatar with text
                 marginBottom: '20px',
                 width: '100%',
+                position: 'relative'
             }}
             >
             {/* Avatar on the left */}
@@ -131,7 +134,8 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                                 navigate(`/user/${post.USERID}`); // ✅ Navigate to user profile
                             }
                         }}>
-                        {variant == "post" ? post?.USERNAME 
+                        {variant == "post"
+                        ? post?.USERNAME
                         : variant == "comment" ? comment?.userName
                         : userInfo?.userName
                         }
@@ -145,6 +149,20 @@ function UserProfilePost({ variant, post, comment, onSubmitComment, refreshPosts
                         }
                     </Typography>
                 </Box> 
+                {/* Timestamp in top right corner */}
+                {variant === "post" && post?.cdatetime && (
+                    <Typography 
+                        variant="caption" 
+                        sx={{ 
+                            position: 'absolute',
+                            top: 20,
+                            right: 16,
+                            color: 'grey'
+                        }}
+                    >
+                        {formatDistanceToNow(new Date(post.cdatetime), { addSuffix: true })}
+                    </Typography>
+                )}
                 {variant === "post" && post?.USERID !== decoded.userId && (
                     <Button
                         variant="contained"
