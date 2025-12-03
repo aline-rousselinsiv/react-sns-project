@@ -28,6 +28,7 @@ The site includes 5 main pages :
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/signup.png" width="500">
 
 ### 2. Write a post
+<img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/feed.png" width="500">
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/post.png" width="500">
 
 ### 3. My Profile
@@ -40,10 +41,10 @@ The site includes 5 main pages :
 ### 5. Follow
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/userprofile.png" width="500">
 
-### 6. Like & Comments
+### 6. Comments
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/friends.png" width="500">
 
-### 7. Feed & Search bar
+### 7. Feed : Search bar & Like Function
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/feed2.png" width="500">
 
 ## Resources - 자료
