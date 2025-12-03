@@ -36,7 +36,7 @@ The site includes 5 main pages :
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/profile2.png" width="500">
 
 ### 4. Friends list
-<img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/friends.png" width="500">
+<img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/friends1.png" width="500">
 
 ### 5. Follow
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/userprofile.png" width="500">
