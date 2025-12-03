@@ -24,6 +24,8 @@ The site includes 5 main pages :
 
 ## Main functions - 주요 기능
 ### 1. Login / Sign Up
+> <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/login.png" width="400">
+> <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/signup.png" width="400">
 ### 2. Write a post
 ### 3. My Profile
 ### 4. Friends list
