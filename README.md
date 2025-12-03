@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/1c0c832d-1f8e-43b0-b27f-824b086c96a5" /># Second Solo Project : “FOODIE”  
+# Second Solo Project : “FOODIE”  
 ## Subject - 제목  
 This solo project is called FOODIE in reference to the english slang “foodie”. 
 A “foodie” describes a person who loves eating, discovering new tastes and new places. 
@@ -26,17 +26,23 @@ The site includes 5 main pages :
 ### 1. Login / Sign Up
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/login.png" width="500">
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/signup.png" width="500">
+
 ### 2. Write a post
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/post.png" width="500">
+
 ### 3. My Profile
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/profile1.png" width="500">
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/profile2.png" width="500">
+
 ### 4. Friends list
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/friends.png" width="500">
+
 ### 5. Follow
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/userprofile.png" width="500">
+
 ### 6. Like & Comments
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/friends.png" width="500">
+
 ### 7. Feed & Search bar
 <img src="https://raw.githubusercontent.com/aline-rousselinsiv/react-sns-project/main/screenshots/feed2.png" width="500">
 
